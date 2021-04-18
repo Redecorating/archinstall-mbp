@@ -22,6 +22,7 @@ def _prep_function(*args, **kwargs):
 	other code in this stage. So it's a safe way to ask the user
 	for more input before any other installer steps start.
 	"""
+    # should ask about touchbar here
 	return True
 
 if __name__ == 'apple-t2':
@@ -82,7 +83,7 @@ if __name__ == 'apple-t2':
 		# TODO: make this a package
 		print("Installing apple-ibridge (Touchbar driver).")
 		installation.arch_chroot("git clone https://github.com/t2linux/apple-ib-drv /usr/src/apple-ibridge-0.1")
-		installation.arch_chroot("sh -c 'dkms install -m apple-ibridge -v 0.1 -k $(pacman -Q linux-mbp|cut -d\\  -f2)-mbp'")
+		installation.arch_chroot("sh -c 'dkms install -m apple-ibridge -v 0.1 -k $(pacman -Q linux-mbp|cut -d\  -f2)-mbp'")
 
 		with open(f"{installation.mountpoint}/etc/modules-load.d/t2.conf", 'a') as modulesConf:
 			modulesConf.write("apple-ib-tb\n")
@@ -105,15 +106,17 @@ if __name__ == 'apple-t2':
 		print("You'll need the normal audio config files,", end=' ')
 	print("once you've booted into your install, check the t2linux wiki for instructions on how to get them, as this script doesn't yet install them.")
 	
-	# TODO: wifi
-	# loaded firmware for current chip should be copied to the install with:
-	#	cp -n /lib/firmware/$(journalctl -b --grep=brcmf_fw_alloc_request|tail -n1|rev|cut -d\  -f4|rev)* {installation.mountpoint}/lib/firmware/brcm/
-	# this needs need to check that we aren't overwriteing firmware, as in
-	# the future this will be all automatic and we don't want to break that
-	# then. `-n` might do this, `-u` might be good. also need to check that
-	# wifi is working. would be good to also be able to fetch firmware from
-	# https://packages.aunali1.com/apple/wifi-fw/18G2022/ if ethernet is being
-	# used
+# TODO: wifi
+"""
+loaded firmware for current chip should be copied to the install with:
+  cp -n /lib/firmware/$(journalctl -b --grep=brcmf_fw_alloc_request|tail -n1|rev|cut -d\  -f4|rev)* {installation.mountpoint}/lib/firmware/brcm/
+this needs need to check that we aren't overwriteing firmware, as in
+the future this will be all automatic and we don't want to break that
+then. `-n` might do this, `-u` might be good. also need to check that
+wifi is working. would be good to also be able to fetch firmware from
+https://packages.aunali1.com/apple/wifi-fw/18G2022/ if ethernet is
+being used
+"""
 
 	print("Wifi is not yet set up by this script.")
 
