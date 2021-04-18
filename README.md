@@ -23,7 +23,7 @@ At the profiles section, you **need** to select the "apple-t2" profile. Selectin
 	sudo dkms install -m apple-ibridge -v 0.1
 	sudo modprobe apple-ib-tb
 	sudo sh -c 'echo apple-ib-tb >> /etc/modules-load.d/t2.conf'
-	sudo sh -c 'curl https://raw.githubusercontent.com/marcosfad/mbp-ubuntu/master/files/suspend/rmmod_tb.sh > /lib/systemd/system-sleep/rmmod_tb.sh
+	sudo sh -c 'curl https://raw.githubusercontent.com/marcosfad/mbp-ubuntu/master/files/suspend/rmmod_tb.sh > /lib/systemd/system-sleep/rmmod_tb.sh'
 	sudo chmod +x /lib/systemd/system-sleep/rmmod_tb.sh
 	```
 
