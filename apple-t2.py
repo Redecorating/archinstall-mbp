@@ -22,7 +22,7 @@ def _prep_function(*args, **kwargs):
 	other code in this stage. So it's a safe way to ask the user
 	for more input before any other installer steps start.
 	"""
-    # should ask about touchbar here
+	# should ask about touchbar here
 	return True
 
 if __name__ == 'apple-t2':
@@ -125,3 +125,5 @@ being used
 	print('Setting nvram to remount at boot as readonly, as writing to it panics the t2 chip')
 	with open(f"{installation.mountpoint}/etc/fstab", 'a') as fstab:
 		fstab.write("\nefivarfs /sys/firmware/efi/efivars efivarfs ro,remount 0 0\n")
+
+# vim: autoindent tabstop=4 shiftwidth=4 noexpandtab
