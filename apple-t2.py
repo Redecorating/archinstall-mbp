@@ -77,10 +77,12 @@ if __name__ == 'apple-t2':
 
 
 	## apple-ibridge (touchbar)
-	
+	# dkms hangs and I don't know why, so this is disabled.
 	model = open(f'/sys/devices/virtual/dmi/id/product_name', 'r').read()
 	if "MacBookPro" in model:
 		# TODO: make this a package
+		print("You will need to install apple-ibridge (touchbar driver) after you boot into your install.")
+		"""
 		print("Installing apple-ibridge (Touchbar driver).")
 		installation.arch_chroot("git clone https://github.com/t2linux/apple-ib-drv /usr/src/apple-ibridge-0.1")
 		installation.arch_chroot("sh -c 'dkms install -m apple-ibridge -v 0.1 -k $(pacman -Q linux-mbp|cut -d\  -f2)-mbp'")
@@ -97,7 +99,7 @@ if __name__ == 'apple-t2':
 			rmmodScript.write('then modprobe apple_ib_tb\n')
 			rmmodScript.write('fi\n')
 		os.chmod(f"{installation.mountpoint}/lib/systemd/system-sleep/rmmod.sh", 755)
-
+		"""
 	
 	# TODO: audio conf
 	if model == "MacBookPro16,1" or model == "MacBookPro16,4":
