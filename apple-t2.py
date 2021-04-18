@@ -44,7 +44,7 @@ if __name__ == 'apple-t2':
 	## Kernel and apple-bce
 
 	print('Installing patched kernel and apple-bce')
-	installation.arch_chroot("pacman -S --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git")
+	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git")
 	with open(f"{installation.mountpoint}/etc/modules-load.d/t2.conf", 'a') as modulesConf:
 		modulesConf.write("apple-bce\n")
 
