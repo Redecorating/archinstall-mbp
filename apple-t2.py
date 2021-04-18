@@ -106,17 +106,17 @@ if __name__ == 'apple-t2':
 		print("You'll need the normal audio config files,", end=' ')
 	print("once you've booted into your install, check the t2linux wiki for instructions on how to get them, as this script doesn't yet install them.")
 	
-# TODO: wifi
-"""
-loaded firmware for current chip should be copied to the install with:
-  cp -n /lib/firmware/$(journalctl -b --grep=brcmf_fw_alloc_request|tail -n1|rev|cut -d\  -f4|rev)* {installation.mountpoint}/lib/firmware/brcm/
-this needs need to check that we aren't overwriteing firmware, as in
-the future this will be all automatic and we don't want to break that
-then. `-n` might do this, `-u` might be good. also need to check that
-wifi is working. would be good to also be able to fetch firmware from
-https://packages.aunali1.com/apple/wifi-fw/18G2022/ if ethernet is
-being used
-"""
+	# TODO: wifi
+	"""
+	loaded firmware for current chip should be copied to the install with:
+	  cp -n /lib/firmware/$(journalctl -b --grep=brcmf_fw_alloc_request|tail -n1|rev|cut -d\  -f4|rev)* {installation.mountpoint}/lib/firmware/brcm/
+	this needs need to check that we aren't overwriteing firmware, as in
+	the future this will be all automatic and we don't want to break that
+	then. `-n` might do this, `-u` might be good. also need to check that
+	wifi is working. would be good to also be able to fetch firmware from
+	https://packages.aunali1.com/apple/wifi-fw/18G2022/ if ethernet is
+	being used
+	"""
 
 	print("Wifi is not yet set up by this script.")
 
