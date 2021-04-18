@@ -45,6 +45,10 @@ if __name__ == 'apple-t2':
 	## Kernel and apple-bce
 
 	print('Installing patched kernel and apple-bce')
+	
+	# add modules to mkinitpcio before mbp initramfs are generated
+	installation.arch_chroot("sed -i s/^MODULES=\(/MODULES=\(apple_bce\ hid_apple\ usbhid\ /gm /etc/mkinitcpio.conf")
+
 	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git")
 	with open(f"{installation.mountpoint}/etc/modules-load.d/t2.conf", 'a') as modulesConf:
 		modulesConf.write("apple-bce\n")

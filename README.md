@@ -6,10 +6,10 @@ right now it's a profile so if you use it, you won't be able to select the other
 ## Usage
 
 ```shell
-curl -L https://bit.ly/3amlr9v > /usr/lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
+curl -L https://bit.ly/3amlr9v > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
 archinstall
 ```
-If you don't want the shortened link, use `curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/main/apple-t2.py > /usr/lib/python3.9/site-packages/archinstall/profiles/apple-t2.py`
+If you don't want the shortened link, use `curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/main/apple-t2.py > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py`
 
 At the profiles section, you **need** to select the "apple-t2" profile. Selecting multiple profiles doesn't work.
 
@@ -38,7 +38,6 @@ Includes:
 TODO:
 -	wifi
 -	audio configuration files
--	add `apple_bce hid_apple usbhid` to mkinitpcio modules, for keybaord @ initramfs stage
 -	dkms 'apple-ibridge' driver (touchbar), it hangs when installing the module
 -	add submenu for selecting other profiles
 
