@@ -1,0 +1,48 @@
+# This is an example PKGBUILD file. Use this as a start to creating your own,
+# and remove these comments. For more information, see 'man PKGBUILD'.
+# NOTE: Please fill out the license field for your package! If it is unknown,
+# then please put 'unknown'.
+
+# Maintainer: Your Name <youremail@domain.com>
+
+# original: https://gist.github.com/MCMrARM/c357291e4e5c18894bea10665dcebffb
+# initial 6 speaker support: https://gist.github.com/kevineinarsson/8e5e92664f97508277fefef1b8015fba
+# an improved version of that: https://gist.github.com/jbredall/67d23a7c7aa1ee51edcb3eb60cd6a893
+# add configuration for just speakers: https://github.com/Redecorating/t2-audio-config-files
+pkgname=apple-t2-audio-config-alt
+pkgver=0.1
+pkgrel=3
+pkgdesc="System configuration files for the T2 audio driver, for the 16,1 or 16,4 MacBookPros"
+arch=('any')
+url="https://gist.github.com/jbredall/67d23a7c7aa1ee51edcb3eb60cd6a893"
+license=('unknown')
+depends=(
+  linux-mbp
+)
+makedepends=()
+checkdepends=()
+optdepends=(
+  apple-bce-dkms-git
+  apple-bce-git
+  pulseaudio
+  pipewire
+)
+conflicts=(
+  apple-t2-audio-config
+)
+source=(
+  91-apple-t2-audio.rules
+  apple-t2.conf
+  AppleT2.conf
+)
+
+sha256sums=('d38c15e53a7a5eb94dc4075af2e59c45186a791e23758f25ebdb4ac1c188b138'
+            '065116750b66b110d4190e6a80479b2e1db7b763f48099d2c9755f3c5ad9a8fe'
+            '7fd8dac3f96f5a8583e78024c65da6dc07239ffbe3d9046749609193055be23f')
+
+package() {
+	install -Dm644 ./AppleT2.conf $pkgdir/usr/share/alsa/cards/AppleT2.conf
+	install -Dm644 ./91-apple-t2-audio.rules $pkgdir/usr/lib/udev/rules.d/91-apple-t2-audio.rules
+	install -Dm644 ./apple-t2.conf $pkgdir/usr/share/alsa-card-profile/mixer/profile-sets/apple-t2.conf
+	install -Dm644 ./apple-t2.conf $pkgdir/usr/share/pulseaudio/alsa-mixer/profile-sets/apple-t2.conf
+}

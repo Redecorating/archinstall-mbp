@@ -6,38 +6,28 @@ right now it's a profile so if you use it, you won't be able to select the other
 ## Usage
 
 ```shell
-curl -L https://bit.ly/3amlr9v > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
+curl curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
 archinstall
 ```
-If you don't want the shortened link, use `curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/main/apple-t2.py > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py`
 
 At the profiles section, you **need** to select the "apple-t2" profile. Selecting multiple profiles doesn't work.
 
 ## Post install checklist
 
 -	https://wiki.t2linux.org/guides/wifi/
--	https://wiki.t2linux.org/guides/audio-config/
--	apple-ibridge if you have touchbar:
-	```shell
-	sudo git clone https://github.com/t2linux/apple-ib-drv /usr/src/apple-ibridge-0.1
-	sudo dkms install -m apple-ibridge -v 0.1
-	sudo modprobe apple-ib-tb
-	sudo sh -c 'echo apple-ib-tb >> /etc/modules-load.d/t2.conf'
-	sudo sh -c 'curl https://raw.githubusercontent.com/marcosfad/mbp-ubuntu/master/files/suspend/rmmod_tb.sh > /lib/systemd/system-sleep/rmmod_tb.sh'
-	sudo chmod +x /lib/systemd/system-sleep/rmmod_tb.sh
-	```
+	your firmware files will be in /usr/local/src/t2linux if you selected download
 
 Includes:
 -	patched 'linux-mbp' kernel
 -	dkms 'apple-bce' driver (keyboard, trackpad, audio) 
+-	dkms 'apple-ibridge' driver (touchbar)
+-	audio configuration files
 -	t2linux repo for updates to kernel
 -	nvram remount as read only because t2 likes to panic
 -	rmmod suspend fix
--	makes linux-mbp kernel the default
+-	makes linux-mbp kernel the default kernel to boot with
 
 TODO:
--	wifi
--	audio configuration files
--	dkms 'apple-ibridge' driver (touchbar), it hangs when installing the module
+-	wifi install firmware
 -	add submenu for selecting other profiles
 
