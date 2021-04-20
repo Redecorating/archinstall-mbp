@@ -238,17 +238,17 @@ if __name__ == 'apple-t2':
 	## apple-ibridge (touchbar)
 	touchbarWanted = archinstall.storage['_apple-t2-touchbar']
 	if touchbarWanted == True:
-		installation.arch_chroot("cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg")
-		installation.arch_chroot("cd /usr/local/src/t2linux/apple-ibridge-dkms-git && pacman -U apple-ibridge-dkms-git-*-x86_64.pkg*")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg'")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && pacman -U apple-ibridge-dkms-git-*-x86_64.pkg*'")
 	
 	## audio conf ##
 	altAudioConf = archinstall.storage["_apple-t2-altAudioConf"]
 	if altAudioConf == True:
-		installation.arch_chroot("cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg")
-		installation.arch_chroot("cd /usr/local/src/t2linux/apple-t2-audio-config/alt && pacman -U apple-t2-audio-config-alt-*-any.pkg*")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg'")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && pacman -U apple-t2-audio-config-alt-*-any.pkg*'")
 	else:
-		installation.arch_chroot("cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg")
-		installation.arch_chroot("cd /usr/local/src/t2linux/apple-t2-audio-config/normal && pacman -U apple-t2-audio-config-*-any.pkg*")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg'")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && pacman -U apple-t2-audio-config-*-any.pkg*'")
 
 	## wifi ##
 	# TODO: wifi as package also what's a case /s
@@ -261,7 +261,7 @@ if __name__ == 'apple-t2':
 		print("Wifi is not yet set up by this script, but the firmware files you selected have been downloaded to /usr/local/src/t2linux.")
 	elif archinstall.storage['_apple-t2-wifi'] == "M1":
 		installation.arch_chroot("git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi")
-		installation.arch_chroot("cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o") # don't build it
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o'") # don't build it
 		print("The kernel with the M1 wifi patches is ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later.")
 	else:
 		print("Nothing is being done for WiFi.")
