@@ -233,8 +233,7 @@ if __name__ == 'apple-t2':
 		loaderConf.write("\ndefault  linux-mbp.conf\n")
 		loaderConf.write("timeout  1\n")
 
-	installation.arch_chroot("git clone https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux")
-	installation.arch_chroot("cd /usr/local/src/t2linux && git checkout -b testing")
+	installation.arch_chroot("git clone -b testing https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux")
 
 	## apple-ibridge (touchbar)
 	touchbarWanted = archinstall.storage['_apple-t2-touchbar']
