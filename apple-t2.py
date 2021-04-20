@@ -253,14 +253,14 @@ if __name__ == 'apple-t2':
 
 	## wifi ##
 	# TODO: wifi as package also what's a case /s
-	if archinstall.storage['_apple-t2-wifi'] = "Download":
+	if archinstall.storage['_apple-t2-wifi'] == "Download":
 		requestedFiles = archinstall.storage["_apple-t2-wifiFW"]
 		for link in requestedFiles:
 			file = requests.get(f"https://dl.t2linux.org/archlinux/apple/wifi-fw/18G2022/{link}")
 			link = link[13:]
 			open(f"{installation.mountpoint}/usr/local/src/t2linux/{link}", 'wb').write(file.content)
 		print("Wifi is not yet set up by this script, but the firmware files you selected have been downloaded to /usr/local/src/t2linux.")
-	elif archinstall.storage['_apple-t2-wifi'] = "M1":
+	elif archinstall.storage['_apple-t2-wifi'] == "M1":
 		installation.arch_chroot("git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi")
 		installation.arch_chroot("cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o") # don't build it
 		print("The kernel with the M1 wifi patches is ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later.")
