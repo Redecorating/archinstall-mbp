@@ -18,7 +18,7 @@ import archinstall, requests, os
 def _prep_function(*args, **kwargs):
 
 	
-	## WiFi Functions (aka bloat) ##
+	## WiFi Functions ##
 
 	def checkWifiSupport(model):
 		if "MacBookPro16,1" in model or "MacBookPro16,4" in model:
@@ -30,20 +30,6 @@ def _prep_function(*args, **kwargs):
 			return "No"
 		else: 
 			return "Yes"
-
-	def checkLocalFirmware():
-
-		# these return >0 if it isn't in dmesg.
-		brcmChipPresent = os.system("journalctl -b '--grep=brcmfmac: brcmf_fw_alloc_request: using brcm/brcmfmac.*-pcie for chip BCM' >/dev/null")
-		brcmHostWorkingFW = os.system("journalctl -b '--grep=brcmfmac: brcmf_c_preinit_dcmds: Firmware: BCM.* version .* FWID' > /dev/null")
-	
-		if brcmChipPresent != 0:
-			return "No Chip"
-		else:
-			if brcmHostWorkingFW == 0:
-				return "Copy"
-			else:
-				return "No copy"
 
 	def select_download_firmware():
 		hawaii = ["P-hawaii-ID_M-YSBC_V-m__m-2.3.txt", "P-hawaii-ID_M-YSBC_V-m__m-2.5.txt", "P-hawaii-ID_M-YSBC_V-u__m-4.1.txt", "P-hawaii-ID_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X0_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X0_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X0_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X0_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X2_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X2_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X2_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X2_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X3_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X3_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X3_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X3_M-YSBC_V-u__m-4.3.txt", "P-hawaii_M-YSBC_V-m__m-2.3.txt", "P-hawaii_M-YSBC_V-m__m-2.5.txt", "P-hawaii_M-YSBC_V-u__m-4.1.txt", "P-hawaii_M-YSBC_V-u__m-4.3.txt", "hawaii-ID.clmb", "hawaii-ID.trx", "hawaii-ID.txcb", "hawaii-X0.clmb", "hawaii-X0.trx", "hawaii-X0.txcb", "hawaii-X2.clmb", "hawaii-X2.trx", "hawaii-X2.txcb", "hawaii-X3.clmb", "hawaii-X3.trx", "hawaii-X3.txcb", "hawaii.clmb", "hawaii.trx", "hawaii.txcb"]
@@ -83,10 +69,10 @@ def _prep_function(*args, **kwargs):
 		C_4377__s_B3_names = ["formosa"]
 		chips = [C_4355__s_C1, C_4364__s_B2, C_4364__s_B3, C_4377__s_B3]
 
-		chip_name = archinstall.generic_select(["C-4355__s-C1", "C-4364__s-B2", "C-4364__s-B3", "C-4377__s-B3"], "Which folder? ")
+		chip_name = archinstall.generic_select(["C-4355__s-C1", "C-4364__s-B2", "C-4364__s-B3", "C-4377__s-B3"], "Which folder are the firmware files in? ")
 		chip_dict = {"C-4355__s-C1": C_4355__s_C1_names, "C-4364__s-B2": C_4364__s_B2_names, "C-4364__s-B3": C_4364__s_B3_names, "C-4377__s-B3": C_4377__s_B3_names}
 		chip = chip_dict[chip_name]
-		island_name = archinstall.generic_select(chip, "Which is in the filename? ")
+		island_name = archinstall.generic_select(chip, "Which one of these is in the filenames? ")
 		island_dict = {"hawaii": hawaii, "ekans": ekans, "kahana": kahana, "kauai": kauai, "lanai": lanai, "maui": maui, "midway": midway, "nihau": nihau, "sid": sid, "Kahana": Kahana, "Sid": Sid, "formosa": formosa}
 		island = island_dict[island_name]
 		
@@ -105,8 +91,11 @@ def _prep_function(*args, **kwargs):
 		clmbFile = archinstall.generic_select(clmbList, "Which Regulatory file? ")
 
 		txtList = filter(island, ".txt")
-		txtFile = archinstall.generic_select(txtList, "Which NVRAM file? ")
-		# TODO formosa has 99 options here. this doesn't work well
+		
+		archinstall.print_large_list(txtList, margin_bottom=1)
+		index = eval(input("Which NVRAM file? "))
+		txtFile = txtList[index] # needs 100x90 ish terminal size at the most
+		# TODO handle bad input
 
 		firmwareFiles = {"FIRMWARE": (chip_name + "/" + trxFile), "REGULATORY": (chip_name + "/" + clmbFile), "NVRAM": (chip_name + "/" + txtFile)}
 		
@@ -130,11 +119,10 @@ def _prep_function(*args, **kwargs):
 		if "M1" in WifiSupport:
 			archinstall.storage['apple-t2-wifi'] = "M1"
 		else:
-			LocalFirmwareStatus = checkLocalFirmware()
 			archinstall.storage['apple-t2-wifi'] = "Download"
 
-
 	if archinstall.storage['apple-t2-wifi'] == "Download":
+		print("Please get the output of running `ioreg -l | grep RequestedFiles` in Terminal on macOS, and use it to answer the next few questions.")
 		archinstall.storage['apple-t2-wifiFW'] = select_download_firmware()
 
 
@@ -156,23 +144,27 @@ def _prep_function(*args, **kwargs):
 	else:
 		archinstall.storage['apple-t2-altAudioConf'] = False
 
-	print(archinstall.storage)
+	## repeat user's selections ##
+
+	print("Your selected options for the apple-t2 profile:")
+	for var in ['apple-t2-wifi', 'apple-t2-wifiFW',  'apple-t2-touchbar', 'apple-t2-altAudioConf', 'apple-t2-model']:
+		print('\t' + var + ':', archinstall.storage[var])
+
+
 	return True
 	
 	"""
 	Stored Vars:
-	'apple-t2-wifi': Download/M1/None/Copy
+	'apple-t2-wifi': Download/M1/None
 	'apple-t2-wifiFW': {'FIRMWARE': 'C-4377__s-B3/formosa-X0.trx', 'REGULATORY': 'C-4377__s-B3/formosa-X0.clmb', 'NVRAM': 'C-4377__s-B3/P-formosa-ID_M-SPPR_V-m__m-2.1.txt'}
-	'_apple-t2-touchbar': True/False
-	'_apple-t2-altAudioConf': True/False
+	'apple-t2-touchbar': True/False
+	'apple-t2-altAudioConf': True/False
+	'apple-t2-model': 'MacBookPro15,1'
 	"""
 
 
 
 if __name__ == 'apple-t2':
-	#install()
-
-	#def install():
 
 	## t2linux repo ##
 
@@ -193,7 +185,7 @@ if __name__ == 'apple-t2':
 
 	print('Installing patched kernel and apple-bce')
 	
-	# add modules to mkinitpcio before mbp initramfs are generated
+	# add modules to mkinitpcio before the mbp initramfs' are generated
 	installation.arch_chroot("sed -i s/^MODULES=\(/MODULES=\(apple_bce\ hid_apple\ usbhid\ /gm /etc/mkinitcpio.conf")
 
 	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git")
@@ -203,7 +195,7 @@ if __name__ == 'apple-t2':
 	## add kernel to systemd-boot as default ##
 
 	print("Adding linux-mbp to systemd-boot menu as default")
-	normalBootFileName = os.listdir(f"{installation.mountpoint}/boot/loader/entries")[0]
+	normalBootFileName = sorted(os.listdir(f"{installation.mountpoint}/boot/loader/entries"))[-1]
 	normalBoot = open(f"{installation.mountpoint}/boot/loader/entries/{normalBootFileName}", 'r').readlines()
 	bootOptions = normalBoot[5] #get line with uuid
 	bootOptions = bootOptions[:-1] + " pcie_ports=compat intel_iommu=on\n" # take off \n and add arguments
