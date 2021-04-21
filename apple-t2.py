@@ -5,11 +5,11 @@ import archinstall, requests, os
 #
 # Includes:
 #	patched 'linux-mbp' kernel
-#	dkms 'apple-bce' driver (keyboard, trackpad, audio) TODO: add apple-bce to mkinitpcio
+#	dkms 'apple-bce' driver (keyboard, trackpad, audio)
 #	dkms 'apple-ibridge' driver (touchbar)
-#	TODO audio configuration files
+#	audio configuration files
 #	t2linux repo for updates to kernel
-#	TODO wifi
+#	TODO install wifi
 #	nvram read only because t2 likes to panic
 
 # https://wiki.t2linux.org/distributions/arch/installation/ 
@@ -21,11 +21,7 @@ def _prep_function(*args, **kwargs):
 	## WiFi Functions (aka bloat) ##
 
 	def checkWifiSupport(model):
-	
-		if False: # TODO: if no t2
-			model = input("What model do you want wifi for, if any") # TODO: implement 'if any'
-			return checkWifiSupport(model)
-		if "o16,1" in model or "o16,4" in model:
+		if "MacBookPro16,1" in model or "MacBookPro16,4" in model:
 			print("Currently WiFi only works on this model with Corellium's wifi patch for M1 Macs. To get this working, you need to compile a custom kernel (this one https://github.com/jamlam/mbp-16.1-linux-wifi). You will need to use firmware files from macOS bigsur.")
 			M1wifiKernelDL = archinstall.generic_select(['Yes', 'No'], "Would you like to have the source for this kernel downloaded (to /usr/local/src/t2linux in the Arch Installation)? You can then compile it later without internet. ")
 			return "M1 " + M1wifiKernelDL
@@ -48,14 +44,6 @@ def _prep_function(*args, **kwargs):
 				return "Copy"
 			else:
 				return "No copy"
-
-	def selectFirmwareMethod(LocalFirmware):
-		if LocalFirmware == "Copy asdkljfsda;kf": # TODO: implement this
-			print("WiFi firmware is loaded currently. If you put the firmware listed by `ioreg -l | grep RequestedFiles` in /lib/firmware/brcm and renamed the files, this will be the correct firmware for your chip, and it should be copied to the install. If WiFi worked without you having to put your firmware in, then the default firmware might not be ideal for your WiFi chip. If you have the output of the ioreg commend with you, this script can download the right firmware for you. If you don't have the output of ioreg, just select copy and get the right firmware later.")
-			method = archinstall.generic_select(['Download', 'Copy'], "Do you want to copy the WiFi firmware that's currently being used, or download firmware? ")
-		else:
-			method = 'Download'
-		return method
 
 	def select_download_firmware():
 		hawaii = ["P-hawaii-ID_M-YSBC_V-m__m-2.3.txt", "P-hawaii-ID_M-YSBC_V-m__m-2.5.txt", "P-hawaii-ID_M-YSBC_V-u__m-4.1.txt", "P-hawaii-ID_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X0_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X0_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X0_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X0_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X2_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X2_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X2_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X2_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X3_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X3_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X3_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X3_M-YSBC_V-u__m-4.3.txt", "P-hawaii_M-YSBC_V-m__m-2.3.txt", "P-hawaii_M-YSBC_V-m__m-2.5.txt", "P-hawaii_M-YSBC_V-u__m-4.1.txt", "P-hawaii_M-YSBC_V-u__m-4.3.txt", "hawaii-ID.clmb", "hawaii-ID.trx", "hawaii-ID.txcb", "hawaii-X0.clmb", "hawaii-X0.trx", "hawaii-X0.txcb", "hawaii-X2.clmb", "hawaii-X2.trx", "hawaii-X2.txcb", "hawaii-X3.clmb", "hawaii-X3.trx", "hawaii-X3.txcb", "hawaii.clmb", "hawaii.trx", "hawaii.txcb"]
@@ -82,6 +70,7 @@ def _prep_function(*args, **kwargs):
 
 		formosa = ["P-formosa-ID_M-SPPR_V-m__m-2.0.txt", "P-formosa-ID_M-SPPR_V-m__m-2.1.txt", "P-formosa-ID_M-SPPR_V-m__m-2.3.txt", "P-formosa-ID_M-SPPR_V-m__m-2.5.txt", "P-formosa-ID_M-SPPR_V-m__m-3.1.txt", "P-formosa-ID_M-SPPR_V-m__m-3.3.txt", "P-formosa-ID_M-SPPR_V-m__m-3.5.txt", "P-formosa-ID_M-SPPR_V-m__m-4.1.txt", "P-formosa-ID_M-SPPR_V-m__m-4.3.txt", "P-formosa-ID_M-SPPR_V-m__m-4.5.txt", "P-formosa-ID_M-SPPR_V-u__m-2.0.txt", "P-formosa-ID_M-SPPR_V-u__m-2.1.txt", "P-formosa-ID_M-SPPR_V-u__m-2.3.txt", "P-formosa-ID_M-SPPR_V-u__m-2.5.txt", "P-formosa-ID_M-SPPR_V-u__m-3.1.txt", "P-formosa-ID_M-SPPR_V-u__m-3.3.txt", "P-formosa-ID_M-SPPR_V-u__m-3.5.txt", "P-formosa-ID_M-SPPR_V-u__m-4.1.txt", "P-formosa-ID_M-SPPR_V-u__m-4.3.txt", "P-formosa-ID_M-SPPR_V-u__m-4.5.txt", "P-formosa-X0_M-SPPR_V-m__m-2.0.txt", "P-formosa-X0_M-SPPR_V-m__m-2.1.txt", "P-formosa-X0_M-SPPR_V-m__m-2.3.txt", "P-formosa-X0_M-SPPR_V-m__m-2.5.txt", "P-formosa-X0_M-SPPR_V-m__m-3.1.txt", "P-formosa-X0_M-SPPR_V-m__m-3.3.txt", "P-formosa-X0_M-SPPR_V-m__m-3.5.txt", "P-formosa-X0_M-SPPR_V-m__m-4.1.txt", "P-formosa-X0_M-SPPR_V-m__m-4.3.txt", "P-formosa-X0_M-SPPR_V-m__m-4.5.txt", "P-formosa-X0_M-SPPR_V-u__m-2.0.txt", "P-formosa-X0_M-SPPR_V-u__m-2.1.txt", "P-formosa-X0_M-SPPR_V-u__m-2.3.txt", "P-formosa-X0_M-SPPR_V-u__m-2.5.txt", "P-formosa-X0_M-SPPR_V-u__m-3.1.txt", "P-formosa-X0_M-SPPR_V-u__m-3.3.txt", "P-formosa-X0_M-SPPR_V-u__m-3.5.txt", "P-formosa-X0_M-SPPR_V-u__m-4.1.txt", "P-formosa-X0_M-SPPR_V-u__m-4.3.txt", "P-formosa-X0_M-SPPR_V-u__m-4.5.txt", "P-formosa-X2_M-SPPR_V-m__m-2.0.txt", "P-formosa-X2_M-SPPR_V-m__m-2.1.txt", "P-formosa-X2_M-SPPR_V-m__m-2.3.txt", "P-formosa-X2_M-SPPR_V-m__m-2.5.txt", "P-formosa-X2_M-SPPR_V-m__m-3.1.txt", "P-formosa-X2_M-SPPR_V-m__m-3.3.txt", "P-formosa-X2_M-SPPR_V-m__m-3.5.txt", "P-formosa-X2_M-SPPR_V-m__m-4.1.txt", "P-formosa-X2_M-SPPR_V-m__m-4.3.txt", "P-formosa-X2_M-SPPR_V-m__m-4.5.txt", "P-formosa-X2_M-SPPR_V-u__m-2.0.txt", "P-formosa-X2_M-SPPR_V-u__m-2.1.txt", "P-formosa-X2_M-SPPR_V-u__m-2.3.txt", "P-formosa-X2_M-SPPR_V-u__m-2.5.txt", "P-formosa-X2_M-SPPR_V-u__m-3.1.txt", "P-formosa-X2_M-SPPR_V-u__m-3.3.txt", "P-formosa-X2_M-SPPR_V-u__m-3.5.txt", "P-formosa-X2_M-SPPR_V-u__m-4.1.txt", "P-formosa-X2_M-SPPR_V-u__m-4.3.txt", "P-formosa-X2_M-SPPR_V-u__m-4.5.txt", "P-formosa-X3_M-SPPR_V-m__m-2.0.txt", "P-formosa-X3_M-SPPR_V-m__m-2.1.txt", "P-formosa-X3_M-SPPR_V-m__m-2.3.txt", "P-formosa-X3_M-SPPR_V-m__m-2.5.txt", "P-formosa-X3_M-SPPR_V-m__m-3.1.txt", "P-formosa-X3_M-SPPR_V-m__m-3.3.txt", "P-formosa-X3_M-SPPR_V-m__m-3.5.txt", "P-formosa-X3_M-SPPR_V-m__m-4.1.txt", "P-formosa-X3_M-SPPR_V-m__m-4.3.txt", "P-formosa-X3_M-SPPR_V-m__m-4.5.txt", "P-formosa-X3_M-SPPR_V-u__m-2.0.txt", "P-formosa-X3_M-SPPR_V-u__m-2.1.txt", "P-formosa-X3_M-SPPR_V-u__m-2.3.txt", "P-formosa-X3_M-SPPR_V-u__m-2.5.txt", "P-formosa-X3_M-SPPR_V-u__m-3.1.txt", "P-formosa-X3_M-SPPR_V-u__m-3.3.txt", "P-formosa-X3_M-SPPR_V-u__m-3.5.txt", "P-formosa-X3_M-SPPR_V-u__m-4.1.txt", "P-formosa-X3_M-SPPR_V-u__m-4.3.txt", "P-formosa-X3_M-SPPR_V-u__m-4.5.txt", "P-formosa_M-SPPR_V-m__m-2.0.txt", "P-formosa_M-SPPR_V-m__m-2.1.txt", "P-formosa_M-SPPR_V-m__m-2.3.txt", "P-formosa_M-SPPR_V-m__m-2.5.txt", "P-formosa_M-SPPR_V-m__m-3.1.txt", "P-formosa_M-SPPR_V-m__m-3.3.txt", "P-formosa_M-SPPR_V-m__m-3.5.txt", "P-formosa_M-SPPR_V-m__m-4.1.txt", "P-formosa_M-SPPR_V-m__m-4.3.txt", "P-formosa_M-SPPR_V-m__m-4.5.txt", "P-formosa_M-SPPR_V-u__m-2.0.txt", "P-formosa_M-SPPR_V-u__m-2.1.txt", "P-formosa_M-SPPR_V-u__m-2.3.txt", "P-formosa_M-SPPR_V-u__m-2.5.txt", "P-formosa_M-SPPR_V-u__m-3.1.txt", "P-formosa_M-SPPR_V-u__m-3.3.txt", "P-formosa_M-SPPR_V-u__m-3.5.txt", "P-formosa_M-SPPR_V-u__m-4.1.txt", "P-formosa_M-SPPR_V-u__m-4.3.txt", "P-formosa_M-SPPR_V-u__m-4.5.txt", "formosa-ID.clmb", "formosa-ID.trx", "formosa-ID.txcb", "formosa-X0.clmb", "formosa-X0.trx", "formosa-X0.txcb", "formosa-X2.clmb", "formosa-X2.trx", "formosa-X2.txcb", "formosa-X3.clmb", "formosa-X3.trx", "formosa-X3.txcb", "formosa.clmb", "formosa.trx", "formosa.txcb"]
 		""""
+		this just fixes that line breaking syntax highlighting due to it's length
 		"""
 		# Chip
 		C_4355__s_C1 = [hawaii]
@@ -116,63 +105,64 @@ def _prep_function(*args, **kwargs):
 		clmbFile = archinstall.generic_select(clmbList, "Which Regulatory file? ")
 
 		txtList = filter(island, ".txt")
-		txtFile = archinstall.generic_select(txtList, "Which Firmware file? ")
-		# formosa has 99 options here. this doesn't work well
+		txtFile = archinstall.generic_select(txtList, "Which NVRAM file? ")
+		# TODO formosa has 99 options here. this doesn't work well
 
-		firmwareFiles = [chip_name + "/" + trxFile, chip_name + "/" + clmbFile, chip_name + "/" + txtFile]
+		firmwareFiles = {"FIRMWARE": (chip_name + "/" + trxFile), "REGULATORY": (chip_name + "/" + clmbFile), "NVRAM": (chip_name + "/" + txtFile)}
 		
 		return firmwareFiles
 		
 
 	## Check for t2
 	global model 
-	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 10:
+	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 10: # XXX revert before merge with main
 		model = open(f'/sys/devices/virtual/dmi/id/product_name', 'r').read()
 	else:
 		model = input("This computer does not have a t2 chip. Enter the model identifier of the t2 Mac you intend to use (i.e. MacBookPro16,1 or MacBookAir9,1): ")
 
+	archinstall.storage["apple-t2-model"] = model
+
 	## WiFi ##
 
 	WifiSupport = checkWifiSupport(model)
-	archinstall.storage['_apple-t2-wifi'] = "None"
+	archinstall.storage['apple-t2-wifi'] = "None"
 	if 'No' not in WifiSupport:
 		if "M1" in WifiSupport:
-			archinstall.storage['_apple-t2-wifi'] = "M1"
+			archinstall.storage['apple-t2-wifi'] = "M1"
 		else:
 			LocalFirmwareStatus = checkLocalFirmware()
-			wifiFWsource = selectFirmwareMethod(LocalFirmwareStatus)
-			archinstall.storage['_apple-t2-wifi'] = wifiFWsource
+			archinstall.storage['apple-t2-wifi'] = "Download"
 
 
-	if archinstall.storage['_apple-t2-wifi'] == "Download":
-		archinstall.storage['_apple-t2-wifiFW'] = select_download_firmware()
+	if archinstall.storage['apple-t2-wifi'] == "Download":
+		archinstall.storage['apple-t2-wifiFW'] = select_download_firmware()
 
 
 
 	## Touchbar ##
 
-	archinstall.storage['_apple-t2-touchbar'] = False
+	archinstall.storage['apple-t2-touchbar'] = False
 	if "MacBookPro" in model:
-		archinstall.storage['_apple-t2-touchbar'] = True
+		archinstall.storage['apple-t2-touchbar'] = True
 	else:
-		tb = archinstall.generic_select(["Yes", 'No'], "This computer does not have a touchbar. Would you like the touchbar driver anyway?")
+		tb = archinstall.generic_select(["Yes", 'No'], "This computer does not have a touchbar. Would you like the touchbar driver anyway? ")
 		if tb == "Yes":
-			archinstall.storage['_apple-t2-touchbar'] = True
+			archinstall.storage['apple-t2-touchbar'] = True
 		
 	## Audio Conf ##
 	
 	if model == "MacBookPro16,1" or model == "MacBookPro16,4":
-		archinstall.storage['_apple-t2-altAudioConf'] = True	
+		archinstall.storage['apple-t2-altAudioConf'] = True	
 	else:
-		archinstall.storage['_apple-t2-altAudioConf'] = False
+		archinstall.storage['apple-t2-altAudioConf'] = False
 
 	print(archinstall.storage)
 	return True
 	
 	"""
 	Stored Vars:
-	'_apple-t2-wifi': Download/M1/None/Copy
-	'_apple-t2-wifiFW': ['C-4364__s-B3/sid-X3.trx', 'C-4364__s-B3/sid-X2.clmb', 'C-4364__s-B3/P-sid-X0_M-HRPN_V-u__m-7.7.txt'],
+	'apple-t2-wifi': Download/M1/None/Copy
+	'apple-t2-wifiFW': {'FIRMWARE': 'C-4377__s-B3/formosa-X0.trx', 'REGULATORY': 'C-4377__s-B3/formosa-X0.clmb', 'NVRAM': 'C-4377__s-B3/P-formosa-ID_M-SPPR_V-m__m-2.1.txt'}
 	'_apple-t2-touchbar': True/False
 	'_apple-t2-altAudioConf': True/False
 	"""
@@ -180,15 +170,18 @@ def _prep_function(*args, **kwargs):
 
 
 if __name__ == 'apple-t2':
+	#install()
 
-	## t2linux repo
+	#def install():
+
+	## t2linux repo ##
 
 	print('Adding t2linux repo to /etc/pacman.conf in install')
 	with open(f'{installation.mountpoint}/etc/pacman.conf', 'a') as pacmanconf:
 		pacmanconf.write("\n[mbp]\n")
 		pacmanconf.write("Server = https://dl.t2linux.org/archlinux/$repo/$arch\n")
 
-	# add package signing key
+	# add package signing key #
 
 	t2linuxKey = requests.get("https://dl.t2linux.org/archlinux/key.asc")
 	open(f"{installation.mountpoint}/t2key.asc", 'wb').write(t2linuxKey.content)
@@ -196,7 +189,7 @@ if __name__ == 'apple-t2':
 	installation.arch_chroot("pacman-key --lsign 7F9B8FC29F78B339") # aunali1's key
 	os.remove(f"{installation.mountpoint}/t2key.asc")
 
-	## Kernel and apple-bce
+	## Kernel and apple-bce ##
 
 	print('Installing patched kernel and apple-bce')
 	
@@ -207,7 +200,7 @@ if __name__ == 'apple-t2':
 	with open(f"{installation.mountpoint}/etc/modules-load.d/t2.conf", 'a') as modulesConf:
 		modulesConf.write("apple-bce\n")
 
-	## add kernel to systemd-boot as default
+	## add kernel to systemd-boot as default ##
 
 	print("Adding linux-mbp to systemd-boot menu as default")
 	normalBootFileName = os.listdir(f"{installation.mountpoint}/boot/loader/entries")[0]
@@ -233,38 +226,61 @@ if __name__ == 'apple-t2':
 		loaderConf.write("\ndefault  linux-mbp.conf\n")
 		loaderConf.write("timeout  1\n")
 
-	installation.arch_chroot("git clone -b testing https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux")
+	### build packages ###
+
+
+	installation.arch_chroot("mkdir /usr/local/src/t2linux")
+	installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
+	installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone -b testing https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux'")
 
 	## apple-ibridge (touchbar)
-	touchbarWanted = archinstall.storage['_apple-t2-touchbar']
+	touchbarWanted = archinstall.storage['apple-t2-touchbar']
 	if touchbarWanted == True:
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg'")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && pacman -U apple-ibridge-dkms-git-*-x86_64.pkg*'")
+		print("Building apple-ibridge-dkms-git")
+		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg'")
+		print("Installing apple-ibridge-dkms-git")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && pacman -U --noconfirm apple-ibridge-dkms-git-*-x86_64.pkg*'")
 	
 	## audio conf ##
-	altAudioConf = archinstall.storage["_apple-t2-altAudioConf"]
+	altAudioConf = archinstall.storage["apple-t2-altAudioConf"]
 	if altAudioConf == True:
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg'")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && pacman -U apple-t2-audio-config-alt-*-any.pkg*'")
+		print("Installing alternate t2 audio config files for 16 inch MacBookPro")
+		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg'")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && pacman -U --noconfirm apple-t2-audio-config-alt-*-any.pkg*'")
 	else:
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg'")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && pacman -U apple-t2-audio-config-*-any.pkg*'")
+		print("Installing t2 audio config files")
+		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg'")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && pacman -U --noconfirm apple-t2-audio-config-*-any.pkg*'")
 
 	## wifi ##
-	# TODO: wifi as package also what's a case /s
-	if archinstall.storage['_apple-t2-wifi'] == "Download":
-		requestedFiles = archinstall.storage["_apple-t2-wifiFW"]
-		for link in requestedFiles:
-			file = requests.get(f"https://dl.t2linux.org/archlinux/apple/wifi-fw/18G2022/{link}")
-			link = link[13:]
-			open(f"{installation.mountpoint}/usr/local/src/t2linux/{link}", 'wb').write(file.content)
-		print("Wifi is not yet set up by this script, but the firmware files you selected have been downloaded to /usr/local/src/t2linux.")
-	elif archinstall.storage['_apple-t2-wifi'] == "M1":
-		installation.arch_chroot("git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o'") # don't build it
-		print("The kernel with the M1 wifi patches is ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later.")
+
+	if archinstall.storage['apple-t2-wifi'] == "Download":
+		print("Configuring WiFi PKGBUILD to use the selected firmware")
+
+		fw = archinstall.storage["apple-t2-wifiFW"]
+		model = archinstall.storage["apple-t2-model"]
+
+		for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
+			link = fw[key]
+			installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /mnt/usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
+		installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /mnt/usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
+
+		print("Downloading firmware and making package")
+		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg'")
+
+		print("Installing WiFi firmware package")
+		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && pacman -U --noconfirm apple-t2-wifi-*-any.pkg*'")
+
+	elif archinstall.storage['apple-t2-wifi'] == "M1":
+		print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
+		installation.arch_chroot("runuser nobody -s /bin/sh -c git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi")
+		print("Downloading kernel source, but not building it.")
+		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o'") # don't build it
+		print("The kernel source with the M1 wifi patches is ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later.")
 	else:
 		print("Nothing is being done for WiFi.")
+	
+	# TODO: chown -r it to not nobody
 
 
 	# nvram ro
