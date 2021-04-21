@@ -6,7 +6,7 @@ right now it's a profile so if you use it, you won't be able to select the other
 ## Usage
 
 ```shell
-curl curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
+curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
 archinstall
 ```
 
@@ -23,11 +23,11 @@ Includes:
 -	dkms 'apple-ibridge' driver (touchbar)
 -	audio configuration files
 -	t2linux repo for updates to kernel
+-	wifi firmware install (no 15,4, 16,X)
 -	nvram remount as read only because t2 likes to panic
 -	rmmod suspend fix
 -	makes linux-mbp kernel the default kernel to boot with
 
 TODO:
--	wifi install firmware
 -	add submenu for selecting other profiles
 
