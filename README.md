@@ -1,6 +1,6 @@
 # archinstall-mbp
 
-A drop in profile for python-archinstall, that installs stuff for t2 macs
+A drop in profile for [python-archinstall](https://github.com/archlinux/archinstall), that installs stuff for t2 macs
 right now it's a profile so if you use it, you won't be able to select the other profiles (desktop enviroments)
 
 ## Usage
@@ -11,11 +11,6 @@ archinstall
 ```
 
 At the profiles section, you **need** to select the "apple-t2" profile. Selecting multiple profiles doesn't work.
-
-## Post install checklist
-
--	https://wiki.t2linux.org/guides/wifi/
-	your firmware files will be in /usr/local/src/t2linux if you selected download
 
 Includes:
 -	patched 'linux-mbp' kernel
