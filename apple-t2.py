@@ -262,8 +262,8 @@ if __name__ == 'apple-t2':
 
 		for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
 			link = fw[key]
-			installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /mnt/usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
-		installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /mnt/usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
+			installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
+		installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
 
 		print("Downloading firmware and making package")
 		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg'")
