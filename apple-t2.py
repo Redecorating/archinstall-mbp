@@ -21,11 +21,11 @@ def _prep_function(*args, **kwargs):
 	## WiFi Functions ##
 
 	def checkWifiSupport(model):
-		if "MacBookPro16,1" in model or "MacBookPro16,4" in model:
+		if "MacBookPro16," in model:
 			print("Currently WiFi only works on this model with Corellium's wifi patch for M1 Macs. To get this working, you need to compile a custom kernel (this one https://github.com/jamlam/mbp-16.1-linux-wifi). You will need to use firmware files from macOS bigsur.")
 			M1wifiKernelDL = archinstall.generic_select(['Yes', 'No'], "Would you like to have the source for this kernel downloaded (to /usr/local/src/t2linux in the Arch Installation)? You can then compile it later without internet. ")
-			return "M1 " + M1wifiKernelDL
-		elif "o16," in model or "o15,4" in model:
+			return "M1 " + M1wifiKernelDL #ew i regret this but it ain't broke...
+		elif "o15,4" in model:
 			print("Currently there is no wifi support for this model.")
 			return "No"
 		else: 
