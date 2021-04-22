@@ -177,7 +177,7 @@ if __name__ == 'apple-t2':
 
 	# add package signing key #
 
-	installation.arch_chroot("curl https://dl.t2linux.org/archlinux/key.asc > /t2key.asc")
+	installation.arch_chroot("sh -c 'curl https://dl.t2linux.org/archlinux/key.asc > /t2key.asc'")
 	installation.arch_chroot("pacman-key --add /t2key.asc")
 	installation.arch_chroot("pacman-key --lsign 7F9B8FC29F78B339") # aunali1's key
 	os.remove(f"{installation.mountpoint}/t2key.asc")
