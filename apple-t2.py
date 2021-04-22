@@ -148,8 +148,10 @@ def _prep_function(*args, **kwargs):
 
 	print("Your selected options for the apple-t2 profile:")
 	for var in ['apple-t2-wifi', 'apple-t2-wifiFW',  'apple-t2-touchbar', 'apple-t2-altAudioConf', 'apple-t2-model']:
-		print('\t' + var + ':', archinstall.storage[var])
-
+		try:
+			print('\t' + var + ':', archinstall.storage[var])
+		except KeyError:
+			foo = "bar" # how to empty exception
 
 	return True
 	
