@@ -9,6 +9,12 @@ right now it's a profile so if you use it, you won't be able to select the other
 curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
 archinstall
 ```
+"My ISO doesn't have archinstall", people can do this:
+```shell
+pacman -Sy archinstall
+ln -s /lib/python3.9/site-packages/archinstall /lib/python3.8/site-packages/archinstall
+```
+
 
 At the profiles section, you **need** to select the "apple-t2" profile. Selecting multiple profiles doesn't work.
 
