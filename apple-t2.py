@@ -261,14 +261,17 @@ if __name__ == 'apple-t2':
 		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg'")
 
 		print("Installing WiFi firmware package")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && pacman -U --noconfirm apple-t2-wifi-*-any.pkg*'")
+		try:
+			installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && pacman -U --noconfirm apple-t2-wifi-*-any.pkg*'") # TODO make this one command
+		except:
+			print("WiFi firmare failed to install. This could be due to an update to linux-mbp that does firmware loading automatically. If WiFi doesn't work in your install, you can see what failed by manually installing the generated firmware package, which will be in /usr/local/src/t2linux/apple-t2-wifi-firmware/.")
 
 	elif archinstall.storage['apple-t2-wifi'] == "M1":
 		print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
 		installation.arch_chroot("runuser nobody -s /bin/sh -c git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi")
 		print("Downloading kernel source, but not building it.")
 		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o'") # don't build it
-		print("The kernel source with the M1 wifi patches is ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later.")
+		print("The kernel source with the M1 wifi patches is ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later, by running `makepkg -ei` in `/usr/local/src/t2linux/mbp-16.1-linux-wifi/`. You will also need firmware from /usr/share/firmware in macOS (Read the WiFi guide at wiki.t2linux.org).")
 	else:
 		print("Nothing is being done for WiFi.")
 	
