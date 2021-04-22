@@ -1,4 +1,4 @@
-import archinstall, requests, os
+import archinstall, os
 
 # Profile for installing on Mac computer that have the T2 security chip
 # By Redecorating
@@ -177,8 +177,7 @@ if __name__ == 'apple-t2':
 
 	# add package signing key #
 
-	t2linuxKey = requests.get("https://dl.t2linux.org/archlinux/key.asc")
-	open(f"{installation.mountpoint}/t2key.asc", 'wb').write(t2linuxKey.content)
+	installation.arch_chroot("curl https://dl.t2linux.org/archlinux/key.asc > /t2key.asc")
 	installation.arch_chroot("pacman-key --add /t2key.asc")
 	installation.arch_chroot("pacman-key --lsign 7F9B8FC29F78B339") # aunali1's key
 	os.remove(f"{installation.mountpoint}/t2key.asc")
