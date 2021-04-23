@@ -4,21 +4,21 @@ A drop in profile for [python-archinstall](https://github.com/archlinux/archinst
 right now it's a profile so if you use it, you won't be able to select the other profiles (desktop enviroments)
 
 ## Usage
-
+1. Connect to internet
+2. Partition disk if you need (for archinstall, if you want to have it on your internal ssd, make a 512mb boot partition and put the rest as the root partition. You don't need to do mkfs.foo, archinstall does it).
+3. Run this:
 ```shell
-curl https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py > /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
+wget https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py
+chmod +x apple-t2.py
+./apple-t2.py
 archinstall
-```
-"My ISO doesn't have archinstall", people can do this:
-```shell
-pacman -Sy archinstall
-ln -s /lib/python3.9/site-packages/archinstall /lib/python3.8/site-packages/archinstall
 ```
 
 
 At the profiles section, you **need** to select the "apple-t2" profile. Selecting multiple profiles doesn't work.
 
 Includes:
+- installes archinstall to the live session if it's missing (as the latest mbp iso was made before archinstall was a thing)
 -	patched 'linux-mbp' kernel
 -	dkms 'apple-bce' driver (keyboard, trackpad, audio) 
 -	dkms 'apple-ibridge' driver (touchbar)
