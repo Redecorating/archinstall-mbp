@@ -208,28 +208,7 @@ if __name__ == 'apple-t2':
 	## add kernel to systemd-boot as default ##
 
 	print("Adding linux-mbp to systemd-boot menu as default")
-	normalBootFileName = sorted(os.listdir(f"{installation.mountpoint}/boot/loader/entries"))[-1]
-	normalBoot = open(f"{installation.mountpoint}/boot/loader/entries/{normalBootFileName}", 'r').readlines()
-	bootOptions = normalBoot[5] #get line with uuid
-	bootOptions = bootOptions[:-1] + " pcie_ports=compat intel_iommu=on\n" # take off \n and add arguments
-
-	with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp.conf", 'w') as entry:
-		entry.write(f"# Created by: archinstall's apple-t2 module\n")
-		entry.write(f'title Arch Linux with linux-mbp\n')
-		entry.write(f'linux /vmlinuz-linux-mbp\n')
-		entry.write(f'initrd /initramfs-linux-mbp.img\n')
-		entry.write(bootOptions)
-	
-	with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp-fallback.conf", 'w') as entry:
-		entry.write(f"# Created by: archinstall's apple-t2 module\n")
-		entry.write(f'title Arch Linux with linux-mbp and fallback initramfs\n')
-		entry.write(f'linux /vmlinuz-linux-mbp\n')
-		entry.write(f'initrd /initramfs-linux-mbp-fallback.img\n')
-		entry.write(bootOptions)
-
-	with open(f"{installation.mountpoint}/boot/loader/loader.conf", 'a') as loaderConf:
-		loaderConf.write("\ndefault  linux-mbp.conf\n")
-		loaderConf.write("timeout  1\n")
+	installation.arch_chroot("sh -c 'sed -e s/-linux/-linux-mbp/g -e s/options/options\ pcie_ports=compat\ intel_iommu=on/g -i /boot/loader/entries/*'")
 
 	### build packages ###
 
@@ -281,7 +260,7 @@ if __name__ == 'apple-t2':
 
 	elif archinstall.storage['apple-t2-wifi'] == "M1":
 		print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
-		installation.arch_chroot("runuser nobody -s /bin/sh -c git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi")
+		installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi'")
 		print("Downloading kernel source, but not building it.")
 		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o'") # don't build it
 		print("The kernel source with the M1 wifi patches is ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later, by running `makepkg -ei` in `/usr/local/src/t2linux/mbp-16.1-linux-wifi/`. You will also need firmware from /usr/share/firmware in macOS (Read the WiFi guide at wiki.t2linux.org).")
@@ -296,5 +275,4 @@ if __name__ == 'apple-t2':
 	print('Setting nvram to remount at boot as readonly, as writing to it panics the t2 chip')
 	with open(f"{installation.mountpoint}/etc/fstab", 'a') as fstab:
 		fstab.write("\nefivarfs /sys/firmware/efi/efivars efivarfs ro,remount 0 0\n")
-
 # vim: autoindent tabstop=4 shiftwidth=4 noexpandtab number
