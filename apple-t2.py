@@ -115,7 +115,7 @@ def _prep_function(*args, **kwargs):
 
 	## Check for t2
 	global model 
-	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 10: # XXX revert before merge with main
+	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 0:
 		model = open(f'/sys/devices/virtual/dmi/id/product_name', 'r').read()
 	else:
 		model = input("This computer does not have a t2 chip. Enter the model identifier of the t2 Mac you intend to use (i.e. MacBookPro16,1 or MacBookAir9,1): ")
@@ -239,7 +239,7 @@ if __name__ == 'apple-t2':
 
 	installation.arch_chroot("mkdir /usr/local/src/t2linux")
 	installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
-	installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone -b testing https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux'")
+	installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux'")
 
 	## apple-ibridge (touchbar)
 	touchbarWanted = archinstall.storage['apple-t2-touchbar']

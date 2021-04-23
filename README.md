@@ -1,6 +1,6 @@
 # archinstall-mbp
 
-A drop in profile for [python-archinstall](https://github.com/archlinux/archinstall), that installs stuff for t2 macs
+A profile for [python-archinstall](https://github.com/archlinux/archinstall), that installs stuff for t2 macs
 right now it's a profile so if you use it, you won't be able to select the other profiles (desktop enviroments)
 
 ## Usage
@@ -8,7 +8,7 @@ right now it's a profile so if you use it, you won't be able to select the other
 2. Partition disk if you need (for archinstall, if you want to have it on your internal ssd, make a 512mb boot partition and put the rest as the root partition. You don't need to do mkfs.foo, archinstall does it).
 3. Run this:
 ```shell
-wget https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py
+wget https://bit.ly/3amlr9v -O apple-t2.py
 sh apple-t2.py
 archinstall
 ```
@@ -21,7 +21,7 @@ Includes:
 -	patched 'linux-mbp' kernel
 -	dkms 'apple-bce' driver (keyboard, trackpad, audio) 
 -	dkms 'apple-ibridge' driver (touchbar)
--	audio configuration files
+-	audio configuration files (speaker layout alsa card profile, works for pipewire and pulseaudio)
 -	t2linux repo for updates to kernel
 -	wifi firmware install (no 15,4, 16,X)
 -	nvram remount as read only because t2 likes to panic
