@@ -9,8 +9,7 @@ right now it's a profile so if you use it, you won't be able to select the other
 3. Run this:
 ```shell
 wget https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py
-chmod +x apple-t2.py
-./apple-t2.py
+sh apple-t2.py
 archinstall
 ```
 

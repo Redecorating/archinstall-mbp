@@ -1,4 +1,3 @@
-#!/bin/sh
 # install archinstall if needed and also move this file into the profiles folder. exits before it gets to the python code.
 """:"
 if [ -e /bin/archinstall ]
@@ -6,22 +5,22 @@ then :
 else pacman -Sy --noconfirm archinstall
 ln -vs /lib/python3.9/site-packages/archinstall /lib/python3.8/site-packages/archinstall
 fi
-cp -v $0 /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
+cp -v apple-t2.py /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
 exit 0
 """
 
 import archinstall, os
 
-# Profile for installing on Mac computer that have the T2 security chip
+# Profile for installing on Mac computers that have the T2 security chip
 # By Redecorating
 #
-# Includes:
+# Installs:
 #	patched 'linux-mbp' kernel
 #	dkms 'apple-bce' driver (keyboard, trackpad, audio)
 #	dkms 'apple-ibridge' driver (touchbar)
 #	audio configuration files
 #	t2linux repo for updates to kernel
-#	TODO install wifi
+#	installs wifi firmware for pre catalina models, and can download source for kernel with M1 wifi patches for 16,X models
 #	nvram read only because t2 likes to panic
 
 # https://wiki.t2linux.org/distributions/arch/installation/ 
