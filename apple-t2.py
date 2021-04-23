@@ -1,3 +1,15 @@
+#!/bin/sh
+# install archinstall if needed and also move this file into the profiles folder. exits before it gets to the python code.
+""":"
+if [ -e /bin/archinstall ]
+then :
+else pacman -Sy --noconfirm archinstall
+ln -vs /lib/python3.9/site-packages/archinstall /lib/python3.8/site-packages/archinstall
+fi
+cp -v $0 /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
+exit 0
+"""
+
 import archinstall, os
 
 # Profile for installing on Mac computer that have the T2 security chip
