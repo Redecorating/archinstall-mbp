@@ -318,7 +318,8 @@ if __name__ == 'apple-t2':
 			print("Installing kernel build dependencies")
 			installation.arch_chroot("pacman -S --needed --noconfirm bc kmod libelf pahole cpio perl tar xz xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick git")
 			print("Downloading kernel source")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o'")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'HOME=/tmp gpg --recv-key 38DBBDC86092693E'")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && HOME=/tmp makepkg -o'")
 			print("The custom kernel patches are ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later, by running `makepkg -ie` in `/usr/local/src/t2linux/mbp-16.1-linux-wifi` (this takes a few hours to compile). You will also need firmware from /usr/share/firmware in macOS (Read the WiFi guide at wiki.t2linux.org).")
 		except:
 			print("An error occured while preparing the kernel with M1 wifi patches.")
