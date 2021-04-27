@@ -1,3 +1,4 @@
+# profile that installs needed drivers for archlinux on Mac computers with the T2 chip.
 # install archinstall if needed and also move this file into the profiles folder. exits before it gets to the python code.
 """:"
 if [ -e /bin/archinstall ]
@@ -28,19 +29,27 @@ import archinstall, os
 
 def _prep_function(*args, **kwargs):
 
-	
+
 	## WiFi Functions ##
 
 	def checkWifiSupport(model):
-		if "MacBookPro16," in model:
+		if "MacBookPro16," in model or "MacBookAir9,1" in model:
 			print("Currently WiFi only works on this model with Corellium's wifi patch for M1 Macs. To get this working, you need to compile a custom kernel (this one https://github.com/jamlam/mbp-16.1-linux-wifi). You will need to use firmware files from macOS bigsur.")
-			M1wifiKernelDL = archinstall.generic_select(['Yes', 'No'], "Would you like to have the patches for this kernel downloaded (to /usr/local/src/t2linux/mbp-16.1-linux-wifi/ in the Arch Installation)? You can then compile it later by running `makepkg -i` in that directory. ")
-			return "M1 " + M1wifiKernelDL #ew i regret this but it ain't broke...
-		elif "o15,4" in model:
+			M1 = None
+			while M1 == None:
+				try:
+					M1 = archinstall.generic_select(['Yes', 'No'], "Would you like to have the source for this kernel downloaded (to /usr/local/src/t2linux/mbp-16.1-linux-wifi/ in the Arch Installation)? You can then compile it later by running `makepkg -ie` in that directory, without internet. ")
+					if M1 == "Yes":
+						return "M1"
+					elif M1 == "No":
+						return "None"
+				except:
+					print("Invalid input")
+		elif "MacBookPro15,4" in model:
 			print("Currently there is no wifi support for this model.")
-			return "No"
+			return "None"
 		else: 
-			return "Yes"
+			return "Download"
 
 	def select_download_firmware():
 		hawaii = ["P-hawaii-ID_M-YSBC_V-m__m-2.3.txt", "P-hawaii-ID_M-YSBC_V-m__m-2.5.txt", "P-hawaii-ID_M-YSBC_V-u__m-4.1.txt", "P-hawaii-ID_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X0_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X0_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X0_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X0_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X2_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X2_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X2_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X2_M-YSBC_V-u__m-4.3.txt", "P-hawaii-X3_M-YSBC_V-m__m-2.3.txt", "P-hawaii-X3_M-YSBC_V-m__m-2.5.txt", "P-hawaii-X3_M-YSBC_V-u__m-4.1.txt", "P-hawaii-X3_M-YSBC_V-u__m-4.3.txt", "P-hawaii_M-YSBC_V-m__m-2.3.txt", "P-hawaii_M-YSBC_V-m__m-2.5.txt", "P-hawaii_M-YSBC_V-u__m-4.1.txt", "P-hawaii_M-YSBC_V-u__m-4.3.txt", "hawaii-ID.clmb", "hawaii-ID.trx", "hawaii-ID.txcb", "hawaii-X0.clmb", "hawaii-X0.trx", "hawaii-X0.txcb", "hawaii-X2.clmb", "hawaii-X2.trx", "hawaii-X2.txcb", "hawaii-X3.clmb", "hawaii-X3.trx", "hawaii-X3.txcb", "hawaii.clmb", "hawaii.trx", "hawaii.txcb"]
@@ -109,75 +118,106 @@ def _prep_function(*args, **kwargs):
 		# TODO handle bad input
 
 		firmwareFiles = {"FIRMWARE": (chip_name + "/" + trxFile), "REGULATORY": (chip_name + "/" + clmbFile), "NVRAM": (chip_name + "/" + txtFile)}
+		# https://packages.aunali1.com/apple/wifi-fw/18G2022/C-4364__s-B3/ seems to have symlinks for it's .trx files. C-4364__s-B2 has files of the same name so use them instead?
+		if 'C-4364__s-B3' in firmwareFiles["FIRMWARE"]:
+			firmwareFiles["FIRMWARE"] = "C-4364__s-B2/" + trxFile
+			print("The trx file selected is missing (probably because it's a symlink), so one from the other 4364 folder is being used. This may not work but it might.")
 		
 		return firmwareFiles
 		
+	apple_t2 = {}
+
+	t2models = ["MacBookPro16,3", "MacBookPro16,2", "MacBookPro16,1", "MacBookPro16,4", "MacBookPro15,4", "MacBookPro15,1", "MacBookPro15,3", "MacBookPro15,2", "MacBookAir9,1", "MacBookAir8,2", "MacBookAir8,1", "Macmini8,1", "MacPro7,1", "iMac20,1", "iMac20,2", "iMacPro1,1"]
 
 	## Check for t2
-	global model 
 	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 0:
 		model = open(f'/sys/devices/virtual/dmi/id/product_name', 'r').read()
 	else:
-		model = input("This computer does not have a t2 chip. Enter the model identifier of the t2 Mac you intend to use (i.e. MacBookPro16,1 or MacBookAir9,1): ")
+		print("This computer does not have a t2 chip.")
+		ret  = False
+		while ret != True:
+			try:
+				model = archinstall.generic_select(t2models, "Which is the model identifier of the t2 Mac you intend to use? ")
+				if model == None:
+					raise IndexError
+				ret = True
+			except IndexError:
+				print("Invalid input.")
 
-	archinstall.storage["apple-t2-model"] = model
+	apple_t2["model"] = model
 
 	## WiFi ##
 
-	WifiSupport = checkWifiSupport(model)
-	archinstall.storage['apple-t2-wifi'] = "None"
-	if 'No' not in WifiSupport:
-		if "M1" in WifiSupport:
-			archinstall.storage['apple-t2-wifi'] = "M1"
-		else:
-			archinstall.storage['apple-t2-wifi'] = "Download"
+	apple_t2['wifi'] = checkWifiSupport(model)
 
-	if archinstall.storage['apple-t2-wifi'] == "Download":
+	if apple_t2['wifi'] == "Download":
 		print("Please get the output of running `ioreg -l | grep RequestedFiles` in Terminal on macOS, and use it to answer the next few questions.")
-		archinstall.storage['apple-t2-wifiFW'] = select_download_firmware()
-
+		ret = False
+		while ret != True:
+			try:
+				apple_t2['wifiFW'] = select_download_firmware()
+				ret = True
+			except (IndexError, KeyError):
+				print("Invalid input")
 
 
 	## Touchbar ##
 
-	archinstall.storage['apple-t2-touchbar'] = False
 	if "MacBookPro" in model:
-		archinstall.storage['apple-t2-touchbar'] = True
+		apple_t2['touchbar'] = True
 	else:
-		tb = archinstall.generic_select(["Yes", 'No'], "This computer does not have a touchbar. Would you like the touchbar driver anyway? ")
-		if tb == "Yes":
-			archinstall.storage['apple-t2-touchbar'] = True
-		
+		apple_t2['touchbar'] = False
+
+
 	## Audio Conf ##
-	
+
 	if model == "MacBookPro16,1" or model == "MacBookPro16,4":
-		archinstall.storage['apple-t2-altAudioConf'] = True	
+		apple_t2['altAudioConf'] = True
 	else:
-		archinstall.storage['apple-t2-altAudioConf'] = False
+		apple_t2['altAudioConf'] = False
+
+	## chainload profile select ##
+
+	list_view = archinstall.list_profiles()
+	profiles = [*list_view]
+	profiles.remove("apple-t2")
+
+	chainProfile = archinstall.generic_select(profiles, "Pick a second profile (or leave blank): ")
+	apple_t2['chainProfile'] = chainProfile
+	profile = archinstall.Profile(None, chainProfile)
+
+	with profile.load_instructions(namespace=f"{chainProfile}.py") as imported:
+		if hasattr(imported, '_prep_function'):
+			ret = imported._prep_function()
+			if ret == False:
+				return False
+		else:
+			print(f"Deprecated (??): {chainProfile} profile has no _prep_function() anymore")
+
 
 	## repeat user's selections ##
 
-	print("Your selected options for the apple-t2 profile:")
-	for var in ['apple-t2-wifi', 'apple-t2-wifiFW',  'apple-t2-touchbar', 'apple-t2-altAudioConf', 'apple-t2-model']:
-		try:
-			print('\t' + var + ':', archinstall.storage[var])
-		except KeyError:
-			foo = "bar" # how to empty exception
+	print("Your selected options for the apple-t2 profile:", end="\n\t")
+	print(apple_t2)
+
+	archinstall.storage["apple_t2"] = apple_t2
 
 	return True
-	
+
 	"""
 	Stored Vars:
-	'apple-t2-wifi': Download/M1/None
-	'apple-t2-wifiFW': {'FIRMWARE': 'C-4377__s-B3/formosa-X0.trx', 'REGULATORY': 'C-4377__s-B3/formosa-X0.clmb', 'NVRAM': 'C-4377__s-B3/P-formosa-ID_M-SPPR_V-m__m-2.1.txt'}
-	'apple-t2-touchbar': True/False
-	'apple-t2-altAudioConf': True/False
-	'apple-t2-model': 'MacBookPro15,1'
+	'wifi': Download/M1/None
+	'wifiFW': {'FIRMWARE': 'C-4377__s-B3/formosa-X0.trx', 'REGULATORY': 'C-4377__s-B3/formosa-X0.clmb', 'NVRAM': 'C-4377__s-B3/P-formosa-ID_M-SPPR_V-m__m-2.1.txt'}
+	'touchbar': True/False
+	'altAudioConf': True/False
+	'model': 'MacBookPro15,1'
 	"""
 
 
 
 if __name__ == 'apple-t2':
+
+	apple_t2 = archinstall.storage["apple_t2"]
 
 	## t2linux repo ##
 
@@ -196,7 +236,7 @@ if __name__ == 'apple-t2':
 	## Kernel and apple-bce ##
 
 	print('Installing patched kernel and apple-bce')
-	
+
 	# add modules to mkinitpcio before the mbp initramfs' are generated
 	installation.arch_chroot("sed -i s/^MODULES=\(/MODULES=\(apple_bce\ hid_apple\ usbhid\ /gm /etc/mkinitcpio.conf")
 
@@ -207,94 +247,119 @@ if __name__ == 'apple-t2':
 	## add kernel to systemd-boot as default ##
 
 	print("Adding linux-mbp to systemd-boot menu as default")
-	confFiles = []
-	for file in os.listdir(f"{installation.mountpoint}/boot/loader/entries"):
-		if "mbp" not in file:
-			confFiles.append(file)
-	normalBootFileName = sorted(confFiles)[-1]
-	normalBoot = open(f"{installation.mountpoint}/boot/loader/entries/{normalBootFileName}", 'r').readlines()
-	bootOptions = normalBoot[5] #get line with uuid
-	bootOptions = bootOptions[:-1] + " pcie_ports=compat intel_iommu=on\n" # take off \n and add arguments
 
-	with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp.conf", 'w') as entry:
-		entry.write(f"# Created by: archinstall's apple-t2 module\n")
-		entry.write(f'title Arch Linux with linux-mbp\n')
-		entry.write(f'linux /vmlinuz-linux-mbp\n')
-		entry.write(f'initrd /initramfs-linux-mbp.img\n')
-		entry.write(bootOptions)
+	try:
+		# work around https://github.com/archlinux/archinstall/issues/322
+		confFiles = []
+		for file in os.listdir(f"{installation.mountpoint}/boot/loader/entries"):
+			if "mbp" not in file:
+				confFiles.append(file)
+		normalBootFileName = sorted(confFiles)[-1]
+		normalBoot = open(f"{installation.mountpoint}/boot/loader/entries/{normalBootFileName}", 'r').readlines()
+		bootOptions = normalBoot[5] #get line with uuid
+		bootOptions = bootOptions[:-1] + " pcie_ports=compat intel_iommu=on\n" # take off \n and add arguments
 
-	with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp-fallback.conf", 'w') as entry:
-		entry.write(f"# Created by: archinstall's apple-t2 module\n")
-		entry.write(f'title Arch Linux with linux-mbp and fallback initramfs\n')
-		entry.write(f'linux /vmlinuz-linux-mbp\n')
-		entry.write(f'initrd /initramfs-linux-mbp-fallback.img\n')
-		entry.write(bootOptions)
+		with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp.conf", 'w') as entry:
+			entry.write(f"# Created by: archinstall's apple-t2 module\n")
+			entry.write(f'title Arch Linux with linux-mbp\n')
+			entry.write(f'linux /vmlinuz-linux-mbp\n')
+			entry.write(f'initrd /initramfs-linux-mbp.img\n')
+			entry.write(bootOptions)
 
-	with open(f"{installation.mountpoint}/boot/loader/loader.conf", 'a') as loaderConf:
-		loaderConf.write("\ndefault  linux-mbp.conf\n")
-		loaderConf.write("timeout  1\n")
-	
+		with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp-fallback.conf", 'w') as entry:
+			entry.write(f"# Created by: archinstall's apple-t2 module\n")
+			entry.write(f'title Arch Linux with linux-mbp and fallback initramfs\n')
+			entry.write(f'linux /vmlinuz-linux-mbp\n')
+			entry.write(f'initrd /initramfs-linux-mbp-fallback.img\n')
+			entry.write(bootOptions)
+
+		with open(f"{installation.mountpoint}/boot/loader/loader.conf", 'a') as loaderConf:
+			loaderConf.write("\ndefault  linux-mbp.conf\n")
+			loaderConf.write("timeout  1\n")
+	except:
+		print("Failed to set linux-mbp as the default kernel.")
+
 	### build packages ###
 
-
-	installation.arch_chroot("mkdir /usr/local/src/t2linux")
-	installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
-	installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux'")
+	try:
+		installation.arch_chroot("mkdir /usr/local/src/t2linux")
+		installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
+		installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux'")
+	except:
+		print("Failed to clone Redecorating/archinstall-mbp, the next few steps will most likely also fail.")
 
 	## apple-ibridge (touchbar)
-	touchbarWanted = archinstall.storage['apple-t2-touchbar']
-	if touchbarWanted == True:
-		print("Building apple-ibridge-dkms-git")
-		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg'")
-		print("Installing apple-ibridge-dkms-git")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && pacman -U --noconfirm apple-ibridge-dkms-git-*-x86_64.pkg*'")
-	
+	if apple_t2["touchbar"] == True:
+		try:
+			print("Building apple-ibridge-dkms-git")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg'")
+			print("Installing apple-ibridge-dkms-git")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-ibridge-dkms-git/apple-ibridge-dkms-git-*-x86_64.pkg*'")
+		except:
+			print("An error occured when installing the toucbar driver.")
+
 	## audio conf ##
-	altAudioConf = archinstall.storage["apple-t2-altAudioConf"]
-	if altAudioConf == True:
-		print("Installing alternate t2 audio config files for 16 inch MacBookPro")
-		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg'")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && pacman -U --noconfirm apple-t2-audio-config-alt-*-any.pkg*'")
-	else:
-		print("Installing t2 audio config files")
-		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg'")
-		installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && pacman -U --noconfirm apple-t2-audio-config-*-any.pkg*'")
+	try:
+		if apple_t2["altAudioConf"] == True:
+			print("Installing alternate t2 alsa card profile files for 16 inch MacBookPro")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg'")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm  /usr/local/src/t2linux/apple-t2-audio-config/alt/apple-t2-audio-config-alt-*-any.pkg*'")
+		else:
+			print("Installing t2 alsa card profile files")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg'")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-audio-config/normal/apple-t2-audio-config-*-any.pkg*'")
+	except:
+		print("An error occured when installing the alsa card profiles for t2 audio")
 
 	## wifi ##
 
-	if archinstall.storage['apple-t2-wifi'] == "Download":
-		print("Configuring WiFi PKGBUILD to use the selected firmware")
-
-		fw = archinstall.storage["apple-t2-wifiFW"]
-		model = archinstall.storage["apple-t2-model"]
-
-		for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
-			link = fw[key]
-			installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
-		installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
-
-		print("Downloading firmware and making package")
-		installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg'")
-
-		print("Installing WiFi firmware package")
+	if apple_t2["wifi"] == "Download":
 		try:
-			installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && pacman -U --noconfirm apple-t2-wifi-*-any.pkg*'") # TODO make this one command
-		except:
-			print("WiFi firmare failed to install. This could be due to an update to linux-mbp that does firmware loading automatically. If WiFi doesn't work in your install, you can see what failed by manually installing the generated firmware package, which will be in /usr/local/src/t2linux/apple-t2-wifi-firmware/.")
+			print("Configuring WiFi PKGBUILD to use the selected firmware")
 
-	elif archinstall.storage['apple-t2-wifi'] == "M1":
-		print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
-		installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi'")
-		print("The custom kernel patches are ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later, by running `makepkg -i` in `/usr/local/src/t2linux//`. You will also need firmware from /usr/share/firmware in macOS (Read the WiFi guide at wiki.t2linux.org).")
+			model = apple_t2["model"]
+
+			for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
+				link = apple_t2["wifiFW"][key]
+				installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
+			installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
+
+			print("Downloading firmware and making package")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg'")
+
+			print("Installing WiFi firmware package")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/apple-t2-wifi-*-any.pkg*'")
+		except:
+			print("An error occured when installing WiFi firmware.")
+	elif apple_t2["wifi"] == "M1":
+		try:
+			print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi'")
+			print("Installing kernel build dependencies")
+			installation.arch_chroot("pacman -S --needed --noconfirm bc kmod libelf pahole cpio perl tar xz xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick git")
+			print("Downloading kernel source")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'HOME=/tmp gpg --recv-key 38DBBDC86092693E'")
+			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && HOME=/tmp makepkg -o'")
+			print("The custom kernel patches are ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later, by running `makepkg -ie` in `/usr/local/src/t2linux/mbp-16.1-linux-wifi` (this takes a few hours to compile). You will also need firmware from /usr/share/firmware in macOS (Read the WiFi guide at wiki.t2linux.org).")
+		except:
+			print("An error occured while preparing the kernel with M1 wifi patches. This might just be the verification of the kernel source, which needs keys imported.")
 	else:
 		print("Nothing is being done for WiFi.")
-	
+
 	# TODO: chown -r it to not nobody
 
 
 	# nvram ro
+	try:
+		print('Setting nvram to remount at boot as readonly, as writing to it panics the t2 chip')
+		with open(f"{installation.mountpoint}/etc/fstab", 'a') as fstab:
+			fstab.write("\nefivarfs /sys/firmware/efi/efivars efivarfs ro,remount 0 0\n")
+	except:
+		print("Failed to set nvram to remount.")
 
-	print('Setting nvram to remount at boot as readonly, as writing to it panics the t2 chip')
-	with open(f"{installation.mountpoint}/etc/fstab", 'a') as fstab:
-		fstab.write("\nefivarfs /sys/firmware/efi/efivars efivarfs ro,remount 0 0\n")
+	## chainloaded profile ##
+
+	if apple_t2["chainProfile"] != "":
+		installation.install_profile(apple_t2['chainProfile'])
+
 # vim: autoindent tabstop=4 shiftwidth=4 noexpandtab number
