@@ -188,7 +188,9 @@ def _prep_function(*args, **kwargs):
 
 	with profile.load_instructions(namespace=f"{chainProfile}.py") as imported:
 		if hasattr(imported, '_prep_function'):
-			return imported._prep_function()
+			ret = imported._prep_function()
+			if ret == False:
+				return False
 		else:
 			print(f"Deprecated (??): {chainProfile} profile has no _prep_function() anymore")
 

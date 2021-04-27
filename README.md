@@ -30,6 +30,7 @@ Includes:
 -	submenu for selecting a second profile (i.e. a desktop enviroment)
 
 TODO:
+-	Fix kernel source verification for kernel with the M1 wifi patch
 -	install mbpfan?
 -	configure apple-ib-tb and apple-bce options
 -	hybrid graphics?
