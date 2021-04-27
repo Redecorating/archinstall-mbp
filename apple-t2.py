@@ -1,3 +1,4 @@
+# profile that installs needed drivers for archlinux on Mac computers with the T2 chip.
 # install archinstall if needed and also move this file into the profiles folder. exits before it gets to the python code.
 """:"
 if [ -e /bin/archinstall ]
@@ -32,7 +33,7 @@ def _prep_function(*args, **kwargs):
 	## WiFi Functions ##
 
 	def checkWifiSupport(model):
-		if "MacBookPro16," in model:
+		if "MacBookPro16," in model or "MacBookAir9,1" in model:
 			print("Currently WiFi only works on this model with Corellium's wifi patch for M1 Macs. To get this working, you need to compile a custom kernel (this one https://github.com/jamlam/mbp-16.1-linux-wifi). You will need to use firmware files from macOS bigsur.")
 			M1 = None
 			while M1 == None:
@@ -174,6 +175,23 @@ def _prep_function(*args, **kwargs):
 		apple_t2['altAudioConf'] = True
 	else:
 		apple_t2['altAudioConf'] = False
+
+	## chainload profile select ##
+
+	list_view = archinstall.list_profiles()
+	profiles = [*list_view]
+	profiles.remove("apple-t2")
+
+	chainProfile = archinstall.generic_select(profiles, "Pick a second profile (or leave blank): ")
+	apple_t2['chainProfile'] = chainProfile
+	profile = archinstall.Profile(None, chainProfile)
+
+	with profile.load_instructions(namespace=f"{chainProfile}.py") as imported:
+		if hasattr(imported, '_prep_function'):
+			return imported._prep_function()
+		else:
+			print(f"Deprecated (??): {chainProfile} profile has no _prep_function() anymore")
+
 
 	## repeat user's selections ##
 
@@ -336,4 +354,10 @@ if __name__ == 'apple-t2':
 			fstab.write("\nefivarfs /sys/firmware/efi/efivars efivarfs ro,remount 0 0\n")
 	except:
 		print("Failed to set nvram to remount.")
+
+	## chainloaded profile ##
+
+	if apple_t2["chainProfile"] != "":
+		installation.install_profile(apple_t2['chainProfile'])
+
 # vim: autoindent tabstop=4 shiftwidth=4 noexpandtab number
