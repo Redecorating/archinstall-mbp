@@ -174,15 +174,16 @@ def _prep_function(*args, **kwargs):
 
 	chainProfile = archinstall.generic_select(profiles, "Pick a second profile (or leave blank): ")
 	apple_t2['chainProfile'] = chainProfile
-	profile = archinstall.Profile(None, chainProfile)
+	if chainProfile != None:
+		profile = archinstall.Profile(None, chainProfile)
 
-	with profile.load_instructions(namespace=f"{chainProfile}.py") as imported:
-		if hasattr(imported, '_prep_function'):
-			ret = imported._prep_function()
-			if ret == False:
-				return False
-		else:
-			print(f"Deprecated (??): {chainProfile} profile has no _prep_function() anymore")
+		with profile.load_instructions(namespace=f"{chainProfile}.py") as imported:
+			if hasattr(imported, '_prep_function'):
+				ret = imported._prep_function()
+				if ret == False:
+					return False
+			else:
+				print(f"Deprecated (??): {chainProfile} profile has no _prep_function() anymore")
 
 
 	## repeat user's selections ##
@@ -353,7 +354,7 @@ if __name__ == 'apple-t2':
 
 	## chainloaded profile ##
 
-	if apple_t2["chainProfile"] != "":
+	if apple_t2["chainProfile"] != None:
 		installation.install_profile(apple_t2['chainProfile'])
 
 # vim: autoindent tabstop=4 shiftwidth=4 noexpandtab number
