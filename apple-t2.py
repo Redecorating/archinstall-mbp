@@ -34,17 +34,7 @@ def _prep_function(*args, **kwargs):
 
 	def checkWifiSupport(model):
 		if "MacBookPro16," in model or "MacBookAir9,1" in model:
-			print("Currently WiFi only works on this model with Corellium's wifi patch for M1 Macs. To get this working, you need to compile a custom kernel (this one https://github.com/jamlam/mbp-16.1-linux-wifi). You will need to use firmware files from macOS bigsur.")
-			M1 = None
-			while M1 == None:
-				try:
-					M1 = archinstall.generic_select(['Yes', 'No'], "Would you like to have the source for this kernel downloaded (to /usr/local/src/t2linux/mbp-16.1-linux-wifi/ in the Arch Installation)? You can then compile it later by running `makepkg -ie` in that directory, without internet. ")
-					if M1 == "Yes":
-						return "M1"
-					elif M1 == "No":
-						return "None"
-				except:
-					print("Invalid input")
+			return "M1"
 		elif "MacBookPro15,4" in model:
 			print("Currently there is no wifi support for this model.")
 			return "None"
@@ -188,7 +178,9 @@ def _prep_function(*args, **kwargs):
 
 	with profile.load_instructions(namespace=f"{chainProfile}.py") as imported:
 		if hasattr(imported, '_prep_function'):
-			return imported._prep_function()
+			ret = imported._prep_function()
+			if ret == False:
+				return False
 		else:
 			print(f"Deprecated (??): {chainProfile} profile has no _prep_function() anymore")
 
@@ -279,10 +271,14 @@ if __name__ == 'apple-t2':
 
 	### build packages ###
 
+	def nobody(command):
+		# gpg and git need a home directory
+		installation.arch_chroot(f"HOME=/usr/local/src/t2linux runuser nobody -m -s /bin/sh -c '{command}'")
+
 	try:
 		installation.arch_chroot("mkdir /usr/local/src/t2linux")
 		installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
-		installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone -b testing https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux'")
+		nobody('git clone -b testing https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux')
 	except:
 		print("Failed to clone Redecorating/archinstall-mbp, the next few steps will most likely also fail.")
 
@@ -290,7 +286,7 @@ if __name__ == 'apple-t2':
 	if apple_t2["touchbar"] == True:
 		try:
 			print("Building apple-ibridge-dkms-git")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg'")
+			nobody('cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg')
 			print("Installing apple-ibridge-dkms-git")
 			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-ibridge-dkms-git/apple-ibridge-dkms-git-*-x86_64.pkg*'")
 		except:
@@ -300,11 +296,11 @@ if __name__ == 'apple-t2':
 	try:
 		if apple_t2["altAudioConf"] == True:
 			print("Installing alternate t2 alsa card profile files for 16 inch MacBookPro")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg'")
+			nobody('cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg')
 			installation.arch_chroot("sh -c 'pacman -U --noconfirm  /usr/local/src/t2linux/apple-t2-audio-config/alt/apple-t2-audio-config-alt-*-any.pkg*'")
 		else:
 			print("Installing t2 alsa card profile files")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg'")
+			nobody('cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg')
 			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-audio-config/normal/apple-t2-audio-config-*-any.pkg*'")
 	except:
 		print("An error occured when installing the alsa card profiles for t2 audio")
@@ -323,7 +319,7 @@ if __name__ == 'apple-t2':
 			installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
 
 			print("Downloading firmware and making package")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg'")
+			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg')
 
 			print("Installing WiFi firmware package")
 			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/apple-t2-wifi-*-any.pkg*'")
@@ -332,12 +328,12 @@ if __name__ == 'apple-t2':
 	elif apple_t2["wifi"] == "M1":
 		try:
 			print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi'")
+			nobody('git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi')
 			print("Installing kernel build dependencies")
 			installation.arch_chroot("pacman -S --needed --noconfirm bc kmod libelf pahole cpio perl tar xz xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick git")
 			print("Downloading kernel source")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'HOME=/tmp gpg --recv-key 38DBBDC86092693E'")
-			installation.arch_chroot("runuser nobody -s /bin/sh -c 'cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && HOME=/tmp makepkg -o'")
+			nobody('gpg --recv-key 38DBBDC86092693E')
+			nobody('cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o')
 			print("The custom kernel patches are ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later, by running `makepkg -ie` in `/usr/local/src/t2linux/mbp-16.1-linux-wifi` (this takes a few hours to compile). You will also need firmware from /usr/share/firmware in macOS (Read the WiFi guide at wiki.t2linux.org).")
 		except:
 			print("An error occured while preparing the kernel with M1 wifi patches.")
