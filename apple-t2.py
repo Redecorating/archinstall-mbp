@@ -250,23 +250,30 @@ if __name__ == 'apple-t2':
 		bootOptions = normalBoot[5] #get line with uuid
 		bootOptions = bootOptions[:-1] + " pcie_ports=compat intel_iommu=on\n" # take off \n and add arguments
 
-		with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp.conf", 'w') as entry:
-			entry.write(f"# Created by: archinstall's apple-t2 module\n")
-			entry.write(f'title Arch Linux with linux-mbp\n')
-			entry.write(f'linux /vmlinuz-linux-mbp\n')
-			entry.write(f'initrd /initramfs-linux-mbp.img\n')
-			entry.write(bootOptions)
-
-		with open(f"{installation.mountpoint}/boot/loader/entries/linux-mbp-fallback.conf", 'w') as entry:
-			entry.write(f"# Created by: archinstall's apple-t2 module\n")
-			entry.write(f'title Arch Linux with linux-mbp and fallback initramfs\n')
-			entry.write(f'linux /vmlinuz-linux-mbp\n')
-			entry.write(f'initrd /initramfs-linux-mbp-fallback.img\n')
-			entry.write(bootOptions)
+		kernels = ["linux-mbp"]
 
 		with open(f"{installation.mountpoint}/boot/loader/loader.conf", 'a') as loaderConf:
 			loaderConf.write("\ndefault  linux-mbp.conf\n")
+			if apple_t2["wifi"] == "M1":
+				kernels.append("mbp-16.1-linux-wifi")
+				loderConf.write("#default mbp-16.1-linux-wifi.conf")
 			loaderConf.write("timeout  1\n")
+
+		for kernel in kernels:
+			with open(f"{installation.mountpoint}/boot/loader/entries/{kernel}.conf", 'w') as entry:
+				entry.write(f"# Created by: archinstall's apple-t2 module\n")
+				entry.write(f'title Arch Linux with {kernel}\n')
+				entry.write(f'linux /vmlinuz-{kernel}\n')
+				entry.write(f'initrd /initramfs-{kernel}.img\n')
+				entry.write(bootOptions)
+
+			with open(f"{installation.mountpoint}/boot/loader/entries/{kernel}-fallback.conf", 'w') as entry:
+				entry.write(f"# Created by: archinstall's apple-t2 module\n")
+				entry.write(f'title Arch Linux with {kernel} and fallback initramfs\n')
+				entry.write(f'linux /vmlinuz-{kernel}\n')
+				entry.write(f'initrd /initramfs-{kernel}-fallback.img\n')
+				entry.write(bootOptions)
+
 	except:
 		print("Failed to set linux-mbp as the default kernel.")
 
@@ -316,11 +323,11 @@ if __name__ == 'apple-t2':
 
 			for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
 				link = apple_t2["wifiFW"][key]
-				installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
-			installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/PKGBUILD")
+				installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/normal/PKGBUILD")
+			installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/normal/PKGBUILD")
 
 			print("Downloading firmware and making package")
-			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg')
+			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware/normal && makepkg')
 
 			print("Installing WiFi firmware package")
 			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/apple-t2-wifi-*-any.pkg*'")

@@ -5,7 +5,6 @@
 
 model=$(echo MODEL)
 _model=$(echo $model|tr , _)
-#chip=$(echo C-4364__s-B3/bali.trx|sed -e 's/^..//' -e 's/__.*//')
 chip=$(echo FIRMWARE |sed -e 's/^..//' -e 's/__.*//')
 pkgname=(apple-t2-wifi-${_model})
 pkgver=0.1
@@ -14,9 +13,6 @@ pkgdesc="Wifi firmware for $model, specific to the computer that firmware was se
 arch=("any")
 url="https://packages.aunali1.com/apple/wifi-fw/18G2022/"
 license=('unknown')
-#source=("bali.trx"
-#        "bali-X3.clmb"
-#	"P-bali-X3_M-HRPN_V-u__m-7.7.txt")
 source=("https://packages.aunali1.com/apple/wifi-fw/18G2022/FIRMWARE"
         "https://packages.aunali1.com/apple/wifi-fw/18G2022/REGULATORY"
 	"https://packages.aunali1.com/apple/wifi-fw/18G2022/NVRAM")
