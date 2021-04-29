@@ -6,6 +6,7 @@ then :
 else pacman -Sy --noconfirm archinstall
 ln -vs /lib/python3.9/site-packages/archinstall /lib/python3.8/site-packages/archinstall
 fi
+mount efivarfs /sys/firmware/efi/efivars/ -o ro,remount -t efivarfs
 cp -v apple-t2.py /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
 exit 0
 """
