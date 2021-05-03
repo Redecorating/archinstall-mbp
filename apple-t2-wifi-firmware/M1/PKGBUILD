@@ -13,9 +13,9 @@ pkgdesc="Wifi firmware for $model, specific to the computer that firmware was se
 arch=("any")
 url="https://github.com/jamlam/mbp-16.1-linux-wifi"
 license=('unknown')
-source=("bali.trx"
-        "bali-X3.clmb"
-	"P-bali-X3_M-HRPN_V-u__m-7.7.txt")
+source=("wifi-fw/C-4364__s-B3/bali.trx"
+        "wifi-fw/C-4364__s-B3/bali-X3.clmb"
+	"wifi-fw/C-4364__s-B3/P-bali-X3_M-HRPN_V-u__m-7.7.txt")
 md5sums=('SKIP'
          'SKIP'
          'SKIP')
