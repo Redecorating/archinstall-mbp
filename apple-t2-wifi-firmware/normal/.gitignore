@@ -1,6 +1,6 @@
 src/
 pkg/
-*.trx
-*.clmb
-*.txt
+./*.trx
+./*.clmb
+./*.txt
 *.pkg.tar.zst

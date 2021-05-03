@@ -13,9 +13,9 @@ pkgdesc="Wifi firmware for $model, specific to the computer that firmware was se
 arch=("any")
 url="https://packages.aunali1.com/apple/wifi-fw/18G2022/"
 license=('unknown')
-source=("https://packages.aunali1.com/apple/wifi-fw/18G2022/FIRMWARE"
-        "https://packages.aunali1.com/apple/wifi-fw/18G2022/REGULATORY"
-	"https://packages.aunali1.com/apple/wifi-fw/18G2022/NVRAM")
+source=("wifi-fw/FIRMWARE"
+        "wifi-fw/REGULATORY"
+	"wifi-fw/NVRAM")
 md5sums=('SKIP'
          'SKIP'
          'SKIP')
