@@ -21,11 +21,11 @@ md5sums=('SKIP'
          'SKIP')
 
 prepare() {
-	cp -L FIRMWARE "brcmfmac$chip-pcie.bin"
-	cp -L REGULATORY "brcmfmac$chip-pcie.clm_blob"
-	cp -L NVRAM "brcmfmac$chip-pcie.Apple Inc.-$model.txt"
+	cp -L FIRMWARE brcmfmac$chip-pcie.bin
+	cp -L REGULATORY brcmfmac$chip-pcie.clm_blob
+	cp -L NVRAM brcmfmac$chip-pcie.Apple\ Inc.-$model.txt
 }
 
 package() {
-	install -Dm644 -t $pkgdir/usr/lib/firmware/brcm/ "brcmfmac$chip-pcie.bin" "brcmfmac$chip-pcie.clm_blob" "brcmfmac$chip-pcie.Apple Inc.-$model.txt"
+	install -Dm644 -t $pkgdir/usr/lib/firmware/brcm/ brcmfmac????-pcie.bin brcmfmac????-pcie.clm_blob brcmfmac????-pcie.Apple\ Inc.-$model.txt
 }

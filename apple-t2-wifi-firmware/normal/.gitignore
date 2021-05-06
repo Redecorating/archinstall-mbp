@@ -4,3 +4,6 @@ pkg/
 ./*.clmb
 ./*.txt
 *.pkg.tar.zst
+FIRMWARE
+NVRAM
+REGULATORY
