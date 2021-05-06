@@ -325,7 +325,6 @@ if __name__ == 'apple-t2':
 			for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
 				link = apple_t2["wifiFW"][key]
 				folder = '/usr/local/src/t2linux/apple-t2-wifi-firmware/normal'
-				#installation.arch_chroot(f"sed -i 's#{key}#{link}#g' /usr/local/src/t2linux/apple-t2-wifi-firmware/normal/PKGBUILD")
 				nobody(f"ln -sr {folder}/wifi-fw/{link} {folder}/{key}")
 			installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' {folder}/PKGBUILD")
 
@@ -333,7 +332,7 @@ if __name__ == 'apple-t2':
 			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware/normal && makepkg')
 
 			print("Installing WiFi firmware package")
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/apple-t2-wifi-*-any.pkg*'")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/normal/apple-t2-wifi-*-any.pkg*'")
 		except:
 			print("An error occured when installing WiFi firmware.")
 	elif apple_t2["wifi"] == "M1":
