@@ -5,7 +5,7 @@
 
 model=$(echo MODEL)
 _model=$(echo $model|tr , _)
-chip=$(echo FIRMWARE |sed -e 's/^..//' -e 's/__.*//')
+chip=$(file FIRMWARE|sed -e 's#.*wifi-fw/C-##' -e 's/__.*//')
 pkgname=(apple-t2-wifi-${_model})
 pkgver=0.1
 pkgrel=1
@@ -13,17 +13,17 @@ pkgdesc="Wifi firmware for $model, specific to the computer that firmware was se
 arch=("any")
 url="https://packages.aunali1.com/apple/wifi-fw/18G2022/"
 license=('unknown')
-source=("wifi-fw/FIRMWARE"
-        "wifi-fw/REGULATORY"
-	"wifi-fw/NVRAM")
+source=("FIRMWARE"
+        "REGULATORY"
+	"NVRAM")
 md5sums=('SKIP'
          'SKIP'
          'SKIP')
 
 prepare() {
-	cp -L *.trx "brcmfmac$chip-pcie.bin"
-	cp -L *.clmb "brcmfmac$chip-pcie.clm_blob"
-	cp -L *.txt "brcmfmac$chip-pcie.Apple Inc.-$model.txt"
+	cp -L FIRMWARE "brcmfmac$chip-pcie.bin"
+	cp -L REGULATORY "brcmfmac$chip-pcie.clm_blob"
+	cp -L NVRAM "brcmfmac$chip-pcie.Apple Inc.-$model.txt"
 }
 
 package() {
