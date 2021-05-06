@@ -1,0 +1,9 @@
+src/
+pkg/
+./*.trx
+./*.clmb
+./*.txt
+*.pkg.tar.zst
+FIRMWARE
+NVRAM
+REGULATORY
