@@ -24,13 +24,13 @@ exit 0
 #	  for kernel with M1 wifi patches for 16,X models
 #	* nvram read only because t2 likes to panic
 
-# https://wiki.t2linux.org/distributions/arch/installation/ 
+# https://wiki.t2linux.org/distributions/arch/installation/
 
 import archinstall, os
 
 is_top_level_profile = True
 
-def select_download_firmware():
+def select_download_firmware(FW):
 
 	## Selection ##
 
@@ -40,20 +40,16 @@ def select_download_firmware():
 	print()
 	print("in Terminal on macOS, and use it to answer the next few questions.")
 
-
 	# TODO: Should be able to get this from the model
 
-	chip_name = select(["C-4355__s-C1",
-						"C-4364__s-B2",
-						"C-4364__s-B3",
-						"C-4377__s-B3"],
+	chip_name = select(FW["chips"],
 						"Which folder are the listed files in? ")
 
-	chip = chip_dict[chip_name]
+	chip = FW[chip_name]
 
-	island_name = select(chip, "Which one of island is in the filenames? ")
+	island_name = select(chip, "Which island is in the filenames? ")
 
-	island = island_dict[island_name]
+	island = FW[island_name]
 
 	trxFile = (island_name.lower() + '.trx')
 	clmbFile = (island_name.lower() + '.clmb')
@@ -77,26 +73,22 @@ def select_download_firmware():
 
 	firmwareFiles = {"FIRMWARE": (chip_name + "/" + trxFile),
 					 "REGULATORY": (chip_name + "/" + clmbFile),
-					 "NVRAM": (chip_name + "/" + txtFile)}
+					 "NVRAM": (chip_name + "/" + txtFile),
+					 "release": FW["release"]}
 
-	# https://packages.aunali1.com/apple/wifi-fw/18G2022/C-4364__s-B3/ seems 
+	# https://packages.aunali1.com/apple/wifi-fw/18G2022/C-4364__s-B3/ seems
 	# to have symlinks for it's .trx files. C-4364__s-B2 has files of the same
-	# name so use them instead? This probably doesn't work.
-
-	if 'C-4364__s-B3' in firmwareFiles["FIRMWARE"]:
-		firmwareFiles["FIRMWARE"] = "C-4364__s-B2/" + trxFile
-		# TODO: Rewrite this message
-		print("The trx file needed is missing (probably because it's a symlink), so one from the other 4364 folder is being used. This may not work but it might.")
+	# name. They are present on bigSur.
 
 	return firmwareFiles
 
 def checkWifiSupport(model):
 	if "MacBookPro16," in model or "MacBookAir9,1" in model:
-		return "M1"
+		return "bigSur"
 	elif "MacBookPro15,4" in model:
-		return "None"
-	else: 
-		return "Download"
+		return ""
+	else:
+		return "mojave"
 
 def filter(List, filterText):
 	filtered = []
@@ -126,7 +118,7 @@ def _prep_function(*args, **kwargs):
 	## Get Model ##
 
 	# XXX revert before merge with main
-	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 10: 
+	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 10:
 		model = open(f'/sys/devices/virtual/dmi/id/product_name', 'r').read()
 	else:
 		print("This computer does not have a t2 chip.")
@@ -139,9 +131,12 @@ def _prep_function(*args, **kwargs):
 
 	apple_t2['wifi'] = checkWifiSupport(model)
 
-	if apple_t2['wifi'] == "Download":
+	if apple_t2['wifi'] == "mojave":
+		apple_t2['wifiFW'] = select_download_firmware(mojaveFW)
+	elif apple_t2['wifi'] == "bigSur":
+		apple_t2['wifiFW'] = select_download_firmware(bigSurFW)
 
-		apple_t2['wifiFW'] = select_download_firmware()
+
 
 
 	## Touchbar ##
@@ -199,7 +194,8 @@ def _prep_function(*args, **kwargs):
 	'wifi': Download/M1/None
 	'wifiFW': {'FIRMWARE': 'C-4377__s-B3/formosa-X0.trx',
 			   'REGULATORY': 'C-4377__s-B3/formosa-X0.clmb',
-			   'NVRAM': 'C-4377__s-B3/P-formosa-ID_M-SPPR_V-m__m-2.1.txt'}
+			   'NVRAM': 'C-4377__s-B3/P-formosa-ID_M-SPPR_V-m__m-2.1.txt',
+			   'release': 'mojaveFW'}
 	'touchbar': True/False
 	'altAudioConf': True/False
 	'model': 'MacBookPro15,1'
@@ -255,7 +251,7 @@ if __name__ == 'apple-t2':
 
 		with open(f"/mnt/boot/loader/loader.conf", 'a') as loaderConf:
 			loaderConf.write("\ndefault  linux-mbp.conf\n")
-			if apple_t2["wifi"] == "M1":
+			if apple_t2["wifi"] == "bigSur":
 				kernels.append("mbp-16.1-linux-wifi")
 				loderConf.write("#default mbp-16.1-linux-wifi.conf")
 			loaderConf.write("timeout  1\n")
@@ -316,23 +312,24 @@ if __name__ == 'apple-t2':
 
 	## wifi ##
 
-	if apple_t2["wifi"] == "Download":
+	if bool(apple_t2["wifi"]):
 		try:
 			print("Configuring WiFi PKGBUILD to use the selected firmware")
 
 			model = apple_t2["model"]
+			release = apple_t2["wifiFW"]["release"]
 
 			for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
 				link = apple_t2["wifiFW"][key]
-				folder = '/usr/local/src/t2linux/apple-t2-wifi-firmware/normal'
-				nobody(f"ln -sr {folder}/wifi-fw/{link} {folder}/{key}")
+				folder = '/usr/local/src/t2linux/apple-t2-wifi-firmware'
+				nobody(f"ln -sr {folder}/{release}/{link} {folder}/{key}")
 			installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' {folder}/PKGBUILD")
 
 			print("Making package")
-			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware/normal && makepkg')
+			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg')
 
 			print("Installing WiFi firmware package")
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/normal/apple-t2-wifi-*-any.pkg*'")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/apple-t2-wifi-*-any.pkg*'")
 		except:
 			print("An error occured when installing WiFi firmware.")
 	elif apple_t2["wifi"] == "M1":
@@ -344,7 +341,6 @@ if __name__ == 'apple-t2':
 			print("Downloading kernel source")
 			nobody('gpg --recv-key 38DBBDC86092693E')
 			nobody('cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o')
-			print("The custom kernel patches are ready in /usr/local/src/t2linux/mbp-16.1-linux-wifi for you to build later, by running `makepkg -ie` in `/usr/local/src/t2linux/mbp-16.1-linux-wifi` (this takes a few hours to compile). You will also need firmware from /usr/share/firmware in macOS (Read the WiFi guide at wiki.t2linux.org).")
 		except:
 			print("An error occured while preparing the kernel with M1 wifi patches.")
 	else:
@@ -378,26 +374,42 @@ t2models = ["MacBookPro16,3", "MacBookPro16,2", "MacBookPro16,1",
 
 ## WIFI FIRMWARE FILES ##
 
-## NVRAM ##
-
-# These are the NVRAM files. Many are exactly the same, so only one of any
-# identical ones have been included. The needed file can be determined by the
-# chip name, i.e. "sid", the version number at the end, i.e. "2.5", and which
-# of "u__m" and "m__m" is present.
+# With the NVRAM files. Many are exactly the same, so only one of any identical
+# ones have been included. The needed file can be determined by the chip name,
+# i.e. "sid", the version number at the end, i.e. "2.5", and which of "u__m"
+# and "m__m" is present.
 
 # The .trx and .clmb files only need the island name, "-X3" etc ones are
-# identical to the ones without "-X3", so island.trx and island.txcb can be
+# identical to the ones without "-X3", so island.trx and island.clmb can be
 # used.
 
-hawaii = [
-			"P-hawaii-ID_M-YSBC_V-m__m-2.3.txt",
+# Mojave #
+
+mojaveFW = {
+
+"release": "mojaveFW",
+
+## Chips and islands ##
+
+"chips": ["C-4355__s-C1", "C-4364__s-B2", "C-4364__s-B3", "C-4377__s-B3"],
+
+"C-4355__s-C1": ["hawaii"],
+
+"C-4364__s-B2": ["ekans", "kahana", "kauai", "lanai",
+					  "maui", "midway", "nihau", "sid"],
+
+"C-4364__s-B3": ["Kahana", "Sid"],
+
+"C-4377__s-B3": ["formosa"],
+
+## Nvram ##
+
+"hawaii": [	"P-hawaii-ID_M-YSBC_V-m__m-2.3.txt",
 			"P-hawaii-ID_M-YSBC_V-m__m-2.5.txt",
 			"P-hawaii-ID_M-YSBC_V-u__m-4.1.txt",
-			"P-hawaii-ID_M-YSBC_V-u__m-4.3.txt"
-		 ]
+			"P-hawaii-ID_M-YSBC_V-u__m-4.3.txt"],
 
-ekans =	[
-			"P-ekans-ID_M-HRPN_V-m__m-5.1.txt",
+"ekans": [	"P-ekans-ID_M-HRPN_V-m__m-5.1.txt",
 			"P-ekans-ID_M-HRPN_V-m__m-6.1.txt",
 			"P-ekans-ID_M-HRPN_V-m__m-6.3.txt",
 			"P-ekans-ID_M-HRPN_V-m__m-7.1.txt",
@@ -405,44 +417,31 @@ ekans =	[
 			"P-ekans-ID_M-HRPN_V-m__m-7.7.txt",
 			"P-ekans-ID_M-HRPN_V-u__m-1.1.txt",
 			"P-ekans-ID_M-HRPN_V-u__m-6.1.txt",
-			"P-ekans-ID_M-HRPN_V-u__m-7.5.txt"
-		 ]
+			"P-ekans-ID_M-HRPN_V-u__m-7.5.txt"],
 
-kahana = [
-			"P-kahana-ID_M-HRPN_V-m__m-7.7.txt",
-			"P-kahana-ID_M-HRPN_V-u__m-7.5.txt"
-		 ]
+"kahana": [	"P-kahana-ID_M-HRPN_V-m__m-7.7.txt",
+			"P-kahana-ID_M-HRPN_V-u__m-7.5.txt"],
 
-kauai =	[
-			"P-kauai-ID_M-HRPN_V-m__m-6.1.txt",
+"kauai": [	"P-kauai-ID_M-HRPN_V-m__m-6.1.txt",
 			"P-kauai-ID_M-HRPN_V-m__m-6.3.txt",
 			"P-kauai-ID_M-HRPN_V-m__m-7.5.txt",
 			"P-kauai-ID_M-HRPN_V-m__m-7.7.txt",
 			"P-kauai-ID_M-HRPN_V-u__m-6.1.txt",
-			"P-kauai-ID_M-HRPN_V-u__m-7.5.txt"
-		 ]
+			"P-kauai-ID_M-HRPN_V-u__m-7.5.txt"],
 
-lanai =	[
-			"P-lanai-ID_M-HRPN_V-m__m-7.7.txt",
-			"P-lanai-ID_M-HRPN_V-u__m-7.5.txt"
-		]
+"lanai": [	"P-lanai-ID_M-HRPN_V-m__m-7.7.txt",
+			"P-lanai-ID_M-HRPN_V-u__m-7.5.txt"],
 
-maui = [
-			"P-maui-ID_M-HRPN_V-m__m-7.7.txt",
-			"P-maui-ID_M-HRPN_V-u__m-7.5.txt" ]
+"maui": [	"P-maui-ID_M-HRPN_V-m__m-7.7.txt",
+			"P-maui-ID_M-HRPN_V-u__m-7.5.txt"],
 
-midway = [
-			"P-midway-ID_M-HRPN_V-m__m-7.7.txt",
-			"P-midway-ID_M-HRPN_V-u__m-7.5.txt"
-		 ]
+"midway": [	"P-midway-ID_M-HRPN_V-m__m-7.7.txt",
+			"P-midway-ID_M-HRPN_V-u__m-7.5.txt"],
 
-nihau =	[
-			"P-nihau-ID_M-HRPN_V-m__m-7.7.txt",
-			"P-nihau-ID_M-HRPN_V-u__m-7.5.txt"
-		]
+"nihau": [	"P-nihau-ID_M-HRPN_V-m__m-7.7.txt",
+			"P-nihau-ID_M-HRPN_V-u__m-7.5.txt"],
 
-sid = [
-			"P-sid-ID_M-HRPN_V-m__m-2.3.txt",
+"sid": [	"P-sid-ID_M-HRPN_V-m__m-2.3.txt",
 			"P-sid-ID_M-HRPN_V-m__m-5.1.txt",
 			"P-sid-ID_M-HRPN_V-m__m-6.1.txt",
 			"P-sid-ID_M-HRPN_V-m__m-6.3.txt",
@@ -451,52 +450,141 @@ sid = [
 			"P-sid-ID_M-HRPN_V-m__m-7.7.txt",
 			"P-sid-ID_M-HRPN_V-u__m-1.1.txt",
 			"P-sid-ID_M-HRPN_V-u__m-6.1.txt",
-			"P-sid-ID_M-HRPN_V-u__m-7.5.txt"
-	  ]
+			"P-sid-ID_M-HRPN_V-u__m-7.5.txt"],
 
-Kahana = [
-			"P-kahana-ID_M-HRPN_V-m__m-7.9.txt",
-			"P-kahana-ID_M-HRPN_V-u__m-7.7.txt"
-		 ]
+"Kahana": [	"P-kahana-ID_M-HRPN_V-m__m-7.9.txt",
+			"P-kahana-ID_M-HRPN_V-u__m-7.7.txt"],
 
-Sid = [
-			"P-sid-ID_M-HRPN_V-m__m-7.9.txt",
-			"P-sid-ID_M-HRPN_V-u__m-7.7.txt"
-	  ]
+"Sid": [	"P-sid-ID_M-HRPN_V-m__m-7.9.txt",
+			"P-sid-ID_M-HRPN_V-u__m-7.7.txt"],
 
-formosa = [
-			"P-formosa-ID_M-SPPR_V-m__m-2.0.txt",
-			"P-formosa-ID_M-SPPR_V-u__m-2.0.txt"
-		  ]
+"formosa": ["P-formosa-ID_M-SPPR_V-m__m-2.0.txt",
+			"P-formosa-ID_M-SPPR_V-u__m-2.0.txt"],
+}
+
+# bigSur
+
+bigSurFW = {
+
+"release": "bigSurFW",
 
 ## Chips and islands ##
 
-C_4355__s_C1 = [hawaii]
-C_4355__s_C1_names = ["hawaii"]
+"chips": [	"C-4355__s-C1", "C-4364__s-B2", "C-4364__s-B3",
+			"C-4377__s-B3", "C-4378__s-B1"],
 
-C_4364__s_B2 = [ekans, kahana, kauai, lanai,
-				maui, midway, nihau, sid]
-C_4364__s_B2_names = ["ekans", "kahana", "kauai", "lanai",
-					  "maui", "midway", "nihau", "sid"]
+"C-4355__s-C1": ["hawaii"],
 
-C_4364__s_B3 = [Kahana, Sid] # capitalisation intentional
-C_4364__s_B3_names = ["Kahana", "Sid"]
+"C-4364__s-B2": ["ekans", "hanauma", "kahana", "kauai", "lanai",
+					  "maui", "midway", "nihau", "sid"],
 
-C_4377__s_B3 = [formosa]
-C_4377__s_B3_names = ["formosa"]
+"C-4364__s-B3": ["Bali", "Borneo", "Hanauma", "Kahana",
+				 "Kure", "Sid", "Trinidad"],
 
-chips = [C_4355__s_C1, C_4364__s_B2, C_4364__s_B3, C_4377__s_B3]
+"C-4377__s-B3": ["fiji", "formosa", "tahiti"],
 
-chip_dict = {"C-4355__s-C1": C_4355__s_C1_names,
-			 "C-4364__s-B2": C_4364__s_B2_names,
-			 "C-4364__s-B3": C_4364__s_B3_names,
-			 "C-4377__s-B3": C_4377__s_B3_names}
+"C-4378__s-B1": ["atlantisb", "atlantis", "honshu", "shikoku"],
 
-island_dict = {"hawaii": hawaii, "ekans": ekans,
-			   "kahana": kahana, "kauai": kauai,
-			   "lanai": lanai, "maui": maui,
-			   "midway": midway, "nihau": nihau,
-			   "sid": sid, "Kahana": Kahana,
-			   "Sid": Sid, "formosa": formosa}
+## Nvram ##
+
+# 4355 C1
+
+"hawaii": [	"P-hawaii-ID_M-YSBC_V-m__m-2.3.txt",
+			"P-hawaii-ID_M-YSBC_V-m__m-2.5.txt",
+			"P-hawaii-ID_M-YSBC_V-u__m-4.1.txt",
+			"P-hawaii-ID_M-YSBC_V-u__m-4.3.txt"],
+
+# 4364 B2
+
+"ekans": [	"P-ekans_M-HRPN_V-m__m-5.1.txt",
+			"P-ekans_M-HRPN_V-m__m-6.1.txt",
+			"P-ekans_M-HRPN_V-m__m-6.3.txt",
+			"P-ekans_M-HRPN_V-m__m-7.1.txt",
+			"P-ekans_M-HRPN_V-m__m-7.5.txt",
+			"P-ekans_M-HRPN_V-m__m-7.7.txt",
+			"P-ekans_M-HRPN_V-u__m-1.1.txt",
+			"P-ekans_M-HRPN_V-u__m-6.1.txt",
+			"P-ekans_M-HRPN_V-u__m-7.5.txt"],
+
+"hanauma": ["P-hanauma_M-HRPN_V-m__m-7.7.txt",
+			"P-hanauma_M-HRPN_V-u__m-7.5.txt"],
+
+"kahana": [	"P-kahana_M-HRPN_V-m__m-7.7.txt",
+			"P-kahana_M-HRPN_V-u__m-7.5.txt"],
+
+"kauai": [	"P-kauai_M-HRPN_V-m__m-6.1.txt",
+			"P-kauai_M-HRPN_V-m__m-6.3.txt",
+			"P-kauai_M-HRPN_V-m__m-7.5.txt",
+			"P-kauai_M-HRPN_V-m__m-7.7.txt",
+			"P-kauai_M-HRPN_V-u__m-6.1.txt",
+			"P-kauai_M-HRPN_V-u__m-7.5.txt"],
+
+"lanai": [	"P-lanai_M-HRPN_V-m__m-7.7.txt",
+			"P-lanai_M-HRPN_V-u__m-7.5.txt"],
+
+"maui": [	"P-maui_M-HRPN_V-m__m-7.7.txt",
+			"P-maui_M-HRPN_V-u__m-7.5.txt"],
+
+"midway": [	"P-midway_M-HRPN_V-m__m-7.7.txt",
+			"P-midway_M-HRPN_V-u__m-7.5.txt"],
+
+"nihau": [	"P-nihau_M-HRPN_V-m__m-7.7.txt",
+			"P-nihau_M-HRPN_V-u__m-7.5.txt"],
+
+"sid": [	"P-sid_M-HRPN_V-m__m-7.5.txt",
+			"P-sid_M-HRPN_V-m__m-7.7.txt",
+			"P-sid_M-HRPN_V-u__m-7.5.txt"],
+
+# 4364 B3
+
+"Bali": [	"P-bali_M-HRPN_V-m__m-7.9.txt",
+			"P-bali_M-HRPN_V-u__m-7.7.txt"],
+
+"Borneo": [	"P-borneo_M-HRPN_V-m__m-7.9.txt",
+			"P-borneo_M-HRPN_V-u__m-7.7.txt",
+			"P-borneo_M-HRPN_V-u__m-7.9.txt"],
+
+"Hanauma": ["P-hanauma_M-HRPN_V-m__m-7.9.txt",
+			"P-hanauma_M-HRPN_V-u__m-7.7.txt"],
+
+"Kahana": [	"P-kahana_M-HRPN_V-m__m-7.9.txt",
+			"P-kahana_M-HRPN_V-u__m-7.7.txt"],
+
+"Kure": [	"P-kure_M-HRPN_V-m__m-7.9.txt",
+			"P-kure_M-HRPN_V-u__m-7.7.txt"],
+
+"Sid": [	"P-sid_M-HRPN_V-m__m-7.9.txt",
+			"P-sid_M-HRPN_V-u__m-7.7.txt"],
+
+"Trinidad":["P-trinidad_M-HRPN_V-m__m-7.9.txt",
+			"P-trinidad_M-HRPN_V-u__m-7.7.txt"],
+
+# 4377 B3
+
+"fiji": [	"P-fiji-ID_M-SPPR_V-m__m-2.0.txt",
+			"P-fiji-ID_M-SPPR_V-u__m-2.0.txt"],
+
+"formosa": ["P-fiji-ID_M-SPPR_V-m__m-2.0.txt",
+			"P-fiji-ID_M-SPPR_V-u__m-2.0.txt"],
+
+"tahiti": [	"P-fiji-ID_M-SPPR_V-m__m-2.0.txt",
+			"P-fiji-ID_M-SPPR_V-u__m-2.0.txt"],
+
+# 4378 B1
+
+"atlantis": [	"P-atlantis-ID_M-RASP_V-m__m-6.1.txt",
+				"P-atlantis-ID_M-RASP_V-u__m-3.7.txt"],
+
+"atlantisb": [	"P-atlantis-ID_M-RASP_V-m__m-6.1.txt",
+				"P-atlantis-ID_M-RASP_V-u__m-3.7.txt"],
+
+"honshu": [		"P-honshu-ID_M-RASP_V-m__m-6.1.txt",
+				"P-honshu-ID_M-RASP_V-u__m-3.7.txt"],
+
+"shikoku": [	"P-shikoku-ID_M-RASP_V-m__m-6.1.txt",
+				"P-shikoku-ID_M-RASP_V-u__m-3.7.txt"]
+
+}
+
 
 # vim: autoindent tabstop=4 shiftwidth=4 noexpandtab number
