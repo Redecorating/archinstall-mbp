@@ -329,10 +329,11 @@ if __name__ == 'apple-t2':
 			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg')
 
 			print("Installing WiFi firmware package")
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/apple-t2-wifi-*-any.pkg*'")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/*.pkg.tar.zst'")
 		except:
 			print("An error occured when installing WiFi firmware.")
-	elif apple_t2["wifi"] == "M1":
+
+	if apple_t2["wifi"] == "M1":
 		try:
 			print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
 			nobody('git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi')
@@ -585,6 +586,5 @@ bigSurFW = {
 				"P-shikoku-ID_M-RASP_V-u__m-3.7.txt"]
 
 }
-
 
 # vim: autoindent tabstop=4 shiftwidth=4 noexpandtab number
