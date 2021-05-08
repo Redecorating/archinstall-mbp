@@ -3,10 +3,28 @@
 # NOTE: Please fill out the license field for your package! If it is unknown,
 # then please put 'unknown'.
 
-model=$(echo MODEL)
+model="MODEL" # changed by sed, if unset, make it this computer's model
+if [ $model == MODEL ]
+then model=$(cat /sys/devices/virtual/dmi/id/product_name)
+fi
 _model=$(echo $model|tr , _)
-chip=$(file FIRMWARE|sed -e 's#.*wifi-fw/C-##' -e 's/__.*//')
-pkgname=(apple-t2-wifi-${_model})
+
+chip=$(file FIRMWARE|sed -e 's#.*FW/C-##' -e 's/__.*//')
+
+# save this in a known location as we can't rely on NVRAM being present at some
+# stages. the uuid is arbitrary.
+
+file NVRAM >/dev/null && file NVRAM > /tmp/0fd6115a-6497-4895-880e-e364b424e926
+
+name=$(cat /tmp/0fd6115a-6497-4895-880e-e364b424e926|sed -e 's/.*to /'$_model-wifi-/ -e 's#/C##' -e s/__s// -e 's#/P##' -e s/.txt//|sed -E 's/(-ID|-X\d)?_M.*_V//'|tr . -)
+
+# sed it a lot to make it like this:
+#
+#	MacBookPro16_1-wifi-bigSurFW-4364-B3-bali-u__m-7-7
+#
+# This has enough to tell which fw files were used.
+
+pkgname=$name
 pkgver=0.1
 pkgrel=1
 pkgdesc="Wifi firmware for $model, specific to the computer that firmware was selected for."
