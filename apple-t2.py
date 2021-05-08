@@ -66,7 +66,7 @@ def select_download_firmware(FW):
 			txtVerList.append(ver)
 
 	ver = select(txtVerList,
-				 "Which version number is in the NVRAM file's name? ")
+				 "Which version number is in the name of the NVRAM file? ")
 
 
 	txtFile = filter(txtList, ver)[0]
@@ -102,12 +102,7 @@ def select(List, Message):
 	if len(List) == 1:
 		return List[0]
 	else:
-		ret = ''
-		while bool(ret) == False:
-			try:
-				ret = archinstall.generic_select(List, Message)
-			except:
-				pass
+		ret = archinstall.generic_select(List, Message, allow_empty_input=False)
 		return ret
 
 def _prep_function(*args, **kwargs):
@@ -135,9 +130,6 @@ def _prep_function(*args, **kwargs):
 		apple_t2['wifiFW'] = select_download_firmware(mojaveFW)
 	elif apple_t2['wifi'] == "bigSur":
 		apple_t2['wifiFW'] = select_download_firmware(bigSurFW)
-
-
-
 
 	## Touchbar ##
 
@@ -191,7 +183,7 @@ def _prep_function(*args, **kwargs):
 
 	"""
 	Stored Vars:
-	'wifi': Download/M1/None
+	'wifi': ""/"mojave"/"bigSur"
 	'wifiFW': {'FIRMWARE': 'C-4377__s-B3/formosa-X0.trx',
 			   'REGULATORY': 'C-4377__s-B3/formosa-X0.clmb',
 			   'NVRAM': 'C-4377__s-B3/P-formosa-ID_M-SPPR_V-m__m-2.1.txt',
@@ -228,7 +220,7 @@ if __name__ == 'apple-t2':
 	# add modules to mkinitpcio before the mbp initramfs' are generated
 	installation.arch_chroot("sed -i s/^MODULES=\(/MODULES=\(apple_bce\ hid_apple\ usbhid\ /gm /etc/mkinitcpio.conf")
 
-	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git")
+	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git iwd")
 	with open(f"/mnt/etc/modules-load.d/t2.conf", 'a') as modulesConf:
 		modulesConf.write("apple-bce\n")
 
@@ -236,43 +228,18 @@ if __name__ == 'apple-t2':
 
 	print("Adding linux-mbp to systemd-boot menu as default")
 
-	try:
-		# work around https://github.com/archlinux/archinstall/issues/322
-		confFiles = []
-		for file in os.listdir(f"/mnt/boot/loader/entries"):
-			if "mbp" not in file:
-				confFiles.append(file)
-		normalBootFileName = sorted(confFiles)[-1]
-		normalBoot = open(f"/mnt/boot/loader/entries/{normalBootFileName}", 'r').readlines()
-		bootOptions = normalBoot[5] #get line with uuid
-		bootOptions = bootOptions[:-1] + " pcie_ports=compat intel_iommu=on\n" # take off \n and add arguments
+	apple_t2 = archinstall.storage["apple_t2"]
+	kernels = ["linux-mbp"]
+	if apple_t2["wifi"] == 	"bigSur":
+		kernels.append("mbp-16.1-linux-wifi")
 
-		kernels = ["linux-mbp"]
+	for kernel in kernels:
+		folder = "/boot/loader/entries"
+		installation.arch_chroot(f"sh -c 'cp {folder}/????-??-??_??-??-??.conf {folder}/{kernel}.conf'")
+		installation.arch_chroot(f"sed -i -e s/-linux/-{kernel}/g -e s/options/options\ pcie_ports=compat\ intel_iommu=on/g {folder}/{kernel}.conf")
 
-		with open(f"/mnt/boot/loader/loader.conf", 'a') as loaderConf:
-			loaderConf.write("\ndefault  linux-mbp.conf\n")
-			if apple_t2["wifi"] == "bigSur":
-				kernels.append("mbp-16.1-linux-wifi")
-				loderConf.write("#default mbp-16.1-linux-wifi.conf")
-			loaderConf.write("timeout  1\n")
-
-		for kernel in kernels:
-			with open(f"/mnt/boot/loader/entries/{kernel}.conf", 'w') as entry:
-				entry.write(f"# Created by: archinstall's apple-t2 module\n")
-				entry.write(f'title Arch Linux with {kernel}\n')
-				entry.write(f'linux /vmlinuz-{kernel}\n')
-				entry.write(f'initrd /initramfs-{kernel}.img\n')
-				entry.write(bootOptions)
-
-			with open(f"/mnt/boot/loader/entries/{kernel}-fallback.conf", 'w') as entry:
-				entry.write(f"# Created by: archinstall's apple-t2 module\n")
-				entry.write(f'title Arch Linux with {kernel} and fallback initramfs\n')
-				entry.write(f'linux /vmlinuz-{kernel}\n')
-				entry.write(f'initrd /initramfs-{kernel}-fallback.img\n')
-				entry.write(bootOptions)
-
-	except:
-		print("Failed to set linux-mbp as the default kernel.")
+	with open(f"/mnt/boot/loader/loader.conf", 'a') as loaderConf:
+		loaderConf.write("\ndefault linux-mbp.conf\n#default mbp-16.1-linux-wifi.conf\ntimeout 1\n")
 
 	### build packages ###
 
@@ -312,6 +279,10 @@ if __name__ == 'apple-t2':
 
 	## wifi ##
 
+	print("Seting NetworkManager backend to iwd")
+	installation.arch_chroot(r"echo [device]\nwifi.backend=iwd >> /etc/NetworkManager/NetworkManager.conf")
+	installation.enable_service('iwd')
+
 	if bool(apple_t2["wifi"]):
 		try:
 			print("Configuring WiFi PKGBUILD to use the selected firmware")
@@ -333,7 +304,7 @@ if __name__ == 'apple-t2':
 		except:
 			print("An error occured when installing WiFi firmware.")
 
-	if apple_t2["wifi"] == "M1":
+	if apple_t2["wifi"] == "bigSur":
 		try:
 			print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
 			nobody('git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi')
@@ -346,9 +317,6 @@ if __name__ == 'apple-t2':
 			print("An error occured while preparing the kernel with M1 wifi patches.")
 	else:
 		print("Nothing is being done for WiFi.")
-
-	# TODO: chown -r it to not nobody
-
 
 	# nvram ro
 	try:

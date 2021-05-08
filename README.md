@@ -12,6 +12,7 @@ wget https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/appl
 sh apple-t2.py
 archinstall
 ```
+5. Enable bluetooth with `systemctl enable bluetooth` if you want it.
 
 At the profiles section, you **need** to select the "apple-t2" profile. The
 apple-t2 profile will ask you if you want a second profile.
@@ -46,6 +47,8 @@ Makes linux-mbp kernel the default kernel to boot with
 
 Submenu for selecting a second profile (i.e. a desktop environment)
 
+Installs `iwd` and sets it as NetworkManager's WiFi backend
+
 TODO:
 -	install mbpfan?
 -	configure apple-ib-tb and apple-bce options
@@ -59,7 +62,7 @@ TODO:
 
 1.	`sudo chown -R $USER:$USER /usr/local/src/t2linux/` 
 2.	`cd /usr/local/src/t2linux/mbp-16.1-linux-wifi`
-3.	`makepkg -ei` (Takes a few hours)
+3.	`MAKEFLAGS=-j12 makepkg -ei` (Takes a few hours) Replace 12 with the number of threads your cpu has
 
 ### Add Kernel to Systemd-Boot
 
