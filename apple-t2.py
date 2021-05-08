@@ -315,8 +315,6 @@ if __name__ == 'apple-t2':
 			nobody('cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o')
 		except:
 			print("An error occured while preparing the kernel with M1 wifi patches.")
-	else:
-		print("Nothing is being done for WiFi.")
 
 	# nvram ro
 	try:
