@@ -62,7 +62,7 @@ TODO:
 
 1.	`sudo chown -R $USER:$USER /usr/local/src/t2linux/` 
 2.	`cd /usr/local/src/t2linux/mbp-16.1-linux-wifi`
-3.	`MAKEFLAGS=-j12 makepkg -ei` (Takes a few hours) Replace 12 with the number of threads your cpu has
+3.	`MAKEFLAGS=-j12 makepkg -ei` (Takes a few hours) Replace 12 with the number of threads your cpu has. You will need about 20GB of space to compile, but you can delete the "src" directory after you are done to get this space back.
 
 ### Add Kernel to Systemd-Boot
 
