@@ -10,7 +10,7 @@ A profile for [python-archinstall](https://github.com/archlinux/archinstall), th
 ```shell
 wget https://bit.ly/3amlr9v -O apple-t2.py
 sh apple-t2.py
-archinstall
+python -m archinstall
 ```
 5. Enable bluetooth with `systemctl enable bluetooth` if you want it.
 
@@ -55,6 +55,7 @@ TODO:
 -	hybrid graphics?
 -	only show top level profiles as chainload options
 -	make into a plugin when they are implemented into archinstall.
+-	`pacman -U https://archive.archlinux.org/packages/i/iwd/iwd-1.13-1-x86_64.pkg.tar.zst`
 
 ## here
 
