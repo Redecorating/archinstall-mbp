@@ -2,10 +2,9 @@
 # install archinstall if needed and also move this file into the profiles
 # folder. exits before it gets to the python code.
 """:"
-if [ -e /bin/archinstall ]
-then :
-else pacman -Sy --noconfirm archinstall
-ln -vs /lib/python3.9/site-packages/archinstall /lib/python3.8/site-packages/archinstall
+if ! [ -e /bin/archinstall ]; then
+	pacman -Sy --noconfirm archinstall
+	ln -vs /lib/python3.9/site-packages/archinstall /lib/python3.8/site-packages/archinstall
 fi
 mount efivarfs /sys/firmware/efi/efivars/ -o ro,remount -t efivarfs
 cp -v apple-t2.py /lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
