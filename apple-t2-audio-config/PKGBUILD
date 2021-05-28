@@ -4,40 +4,50 @@
 # then please put 'unknown'.
 
 # Maintainer: Your Name <youremail@domain.com>
-pkgname=apple-t2-audio-config
+_pkgbase=('apple-t2-audio-config')
+pkgname=(${_pkgbase}-alt ${_pkgbase})
 pkgver=0.1
-pkgrel=3
-pkgdesc="System configuration files for the T2 audio driver"
+pkgrel=4
+pkgdesc="System configuration files for the apple-bce audio driver"
 arch=('any')
 url="https://gist.github.com/MCMrARM/c357291e4e5c18894bea10665dcebffb"
 license=('unknown')
-depends=(
-  linux-mbp
-)
 makedepends=()
 checkdepends=()
+depends=(apple-bce)
 optdepends=(
-  apple-bce-dkms-git
-  apple-bce-git
+  linux-mbp
   pulseaudio
   pipewire
-)
-conflicts=(
-  apple-t2-audio-config-alt
 )
 source=(
   91-apple-t2-audio.rules
   apple-t2.conf
   AppleT2.conf
+  alt-apple-t2.conf
+  alt-AppleT2.conf
 )
 
 sha256sums=('d38c15e53a7a5eb94dc4075af2e59c45186a791e23758f25ebdb4ac1c188b138'
             '263685a151d1a09233889926483e0adfc0f90cbad40929ffa10461aafaf3feb7'
-            '05af36699f5cc39f5f5c65f006e4f120f0940638128f3170dab3a7209c6e2024')
+            '05af36699f5cc39f5f5c65f006e4f120f0940638128f3170dab3a7209c6e2024'
+            '065116750b66b110d4190e6a80479b2e1db7b763f48099d2c9755f3c5ad9a8fe'
+            '7fd8dac3f96f5a8583e78024c65da6dc07239ffbe3d9046749609193055be23f')
 
-package() {
+package_apple-t2-audio-config() {
 	install -Dm644 ./AppleT2.conf $pkgdir/usr/share/alsa/cards/AppleT2.conf
 	install -Dm644 ./91-apple-t2-audio.rules $pkgdir/usr/lib/udev/rules.d/91-apple-t2-audio.rules
 	install -Dm644 ./apple-t2.conf $pkgdir/usr/share/alsa-card-profile/mixer/profile-sets/apple-t2.conf
 	install -Dm644 ./apple-t2.conf $pkgdir/usr/share/pulseaudio/alsa-mixer/profile-sets/apple-t2.conf
+}
+
+
+package_apple-t2-audio-config-alt() {
+	conflicts=("${_pkgbase}")
+	provides=("${_pkgbase}")
+	pkgdesc="System configuration files for the T2 audio driver, for the MacBookPro16,1/4"
+	install -Dm644 ./alt-AppleT2.conf $pkgdir/usr/share/alsa/cards/AppleT2.conf
+	install -Dm644 ./91-apple-t2-audio.rules $pkgdir/usr/lib/udev/rules.d/91-apple-t2-audio.rules
+	install -Dm644 ./alt-apple-t2.conf $pkgdir/usr/share/alsa-card-profile/mixer/profile-sets/apple-t2.conf
+	install -Dm644 ./alt-apple-t2.conf $pkgdir/usr/share/pulseaudio/alsa-mixer/profile-sets/apple-t2.conf
 }

@@ -1,1 +1,0 @@
-apple-t2.py
