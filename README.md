@@ -8,9 +8,9 @@ A profile for [python-archinstall](https://github.com/archlinux/archinstall), th
 3. Boot the install iso, and connect to internet.
 4. Run this:
 ```shell
-wget https://bit.ly/3amlr9v -O apple-t2.py
+wget https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py
 sh apple-t2.py
-archinstall
+python -m archinstall
 ```
 5. Enable bluetooth with `systemctl enable bluetooth` if you want it.
 

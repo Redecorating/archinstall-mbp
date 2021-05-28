@@ -20,8 +20,8 @@ exit 0
 #	* dkms 'apple-ibridge' driver (touchbar)
 #	* audio configuration files
 #	* t2linux repo for updates to kernel
-#	* installs wifi firmware for pre catalina models, and can download source
-#	  for kernel with M1 wifi patches for 16,X models
+#	* installs wifi firmware
+#	* installs kernel with M1 wifi patches for MBP16,X and MBA9,1 models
 #	* nvram read only because t2 likes to panic
 
 # https://wiki.t2linux.org/distributions/arch/installation/
@@ -83,6 +83,7 @@ def select_download_firmware(FW):
 	return firmwareFiles
 
 def checkWifiSupport(model):
+	# 16,3 is unknown
 	if "MacBookPro16," in model or "MacBookAir9,1" in model:
 		return "bigSur"
 	elif "MacBookPro15,4" in model:
@@ -220,8 +221,6 @@ if __name__ == 'apple-t2':
 	installation.arch_chroot("sed -i s/^MODULES=\(/MODULES=\(apple_bce\ hid_apple\ usbhid\ /gm /etc/mkinitcpio.conf")
 
 	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git iwd")
-	with open(f"/mnt/etc/modules-load.d/t2.conf", 'a') as modulesConf:
-		modulesConf.write("apple-bce\n")
 
 	## add kernel to systemd-boot as default ##
 
@@ -238,7 +237,7 @@ if __name__ == 'apple-t2':
 		installation.arch_chroot(f"sed -i -e s/-linux/-{kernel}/g -e s/options/options\ pcie_ports=compat\ intel_iommu=on/g {folder}/{kernel}.conf")
 
 	with open(f"/mnt/boot/loader/loader.conf", 'a') as loaderConf:
-		loaderConf.write("\ndefault linux-mbp.conf\n#default mbp-16.1-linux-wifi.conf\ntimeout 1\n")
+		loaderConf.write("\ndefault linux-mbp.conf\ntimeout 1\n")
 
 	### build packages ###
 
@@ -249,7 +248,7 @@ if __name__ == 'apple-t2':
 	try:
 		installation.arch_chroot("mkdir /usr/local/src/t2linux")
 		installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
-		nobody('git clone https://github.com/Redecorating/archinstall-mbp /usr/local/src/t2linux')
+		nobody('git clone https://github.com/Redecorating/archinstall-mbp -b packages /usr/local/src/t2linux')
 	except:
 		print("Failed to clone Redecorating/archinstall-mbp, the next few steps will most likely also fail.")
 
@@ -265,14 +264,13 @@ if __name__ == 'apple-t2':
 
 	## audio conf ##
 	try:
+		nobody('cd /usr/local/src/t2linux/apple-t2-audio-config && makepkg')
 		if apple_t2["altAudioConf"] == True:
 			print("Installing alternate t2 alsa card profile files for 16 inch MacBookPro")
-			nobody('cd /usr/local/src/t2linux/apple-t2-audio-config/alt && makepkg')
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm  /usr/local/src/t2linux/apple-t2-audio-config/alt/apple-t2-audio-config-alt-*-any.pkg*'")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm  /usr/local/src/t2linux/apple-t2-audio-config/apple-t2-audio-config-alt-*-any.pkg*'")
 		else:
 			print("Installing t2 alsa card profile files")
-			nobody('cd /usr/local/src/t2linux/apple-t2-audio-config/normal && makepkg')
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-audio-config/normal/apple-t2-audio-config-*-any.pkg*'")
+			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-audio-config/apple-t2-audio-config-?.?-?-any.pkg*'")
 	except:
 		print("An error occured when installing the alsa card profiles for t2 audio")
 
@@ -305,6 +303,7 @@ if __name__ == 'apple-t2':
 
 	if apple_t2["wifi"] == "bigSur":
 		try:
+			"""
 			print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
 			nobody('git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi')
 			print("Installing kernel build dependencies")
@@ -312,8 +311,19 @@ if __name__ == 'apple-t2':
 			print("Downloading kernel source")
 			nobody('gpg --recv-key 38DBBDC86092693E')
 			nobody('cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o')
+			"""
+			# use the binary from here for now https://github.com/Redecorating/mbp-16.1-linux-wifi/actions/runs/884896036
+			# these were compiled by github ci, so that and the ci.yml is the root of trust if you install them (i think)
+			print('Installing kernel with alternate WiFi patches.')
+			installation.arch_chroot("curl -o /usr/local/src/t2linux/mbp-16.1-linux-wifi-arch.zip https://github.com/Redecorating/mbp-16.1-linux-wifi/suites/2854066967/artifacts/63752636")
+			installation.arch_chroot("unzip /usr/local/src/t2linux/mbp-16.1-linux-wifi-arch.zip")
+			installation.arch_chroot("pacman -U --noconfirm /usr/local/src/t2linux/mbp-16.1-linux-wifi-*.pkg.tar.zst")
+			installation.arch_chroot("sed -i -e s/linux-mbp.conf/mbp-16.1-linux-wifi.conf/g /boot/loader/loader.conf")
 		except:
-			print("An error occured while preparing the kernel with M1 wifi patches.")
+			print("An error occured while installing the kernel with M1 wifi patches.")
+	else:
+		print('Installing iwd version 1.13-1, as 1.14 doesn\'t work for t2 macbooks.')
+		installation.arch_chroot("pacman -U --noconfirm https://archive.archlinux.org/packages/i/iwd/iwd-1.13-1-x86_64.pkg.tar.zst")
 
 	# nvram ro
 	try:
