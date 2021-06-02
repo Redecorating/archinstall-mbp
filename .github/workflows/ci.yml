@@ -21,8 +21,9 @@ jobs:
         pacman -Syu --noconfirm --needed sudo base-devel
         printf 'builduser ALL=(ALL) ALL\\n' | tee -a /etc/sudoers
         chown -R builduser:builduser /build
+        chown -R builduser:builduser /root
         for i in apple-ibridge-dkms-git apple-t2-audio-config
-        do cd /build/$i
+        do cd $i
         sudo -u builduser bash -c 'export MAKEFLAGS=j\$(nproc) && makepkg -s --noconfirm'
         cd /build
         done
