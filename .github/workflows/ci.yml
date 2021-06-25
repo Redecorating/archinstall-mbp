@@ -45,12 +45,12 @@ jobs:
         name: mbp-packages-${{ steps.create_tag.outputs.tag }}
         path: ${{ github.workspace }}/packages.zip
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-                ${{ github.workspace }}/*/*.pkg.tar.*
-          tag_name: v${{ steps.build.outputs.tag }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+              ${{ github.workspace }}/*/*.pkg.tar.*
+        tag_name: v${{ steps.build.outputs.tag }}
+        draft: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
