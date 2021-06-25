@@ -15,6 +15,10 @@ jobs:
         echo foo
         cat << EOF > entrypoint.sh
         cd /build
+        echo '[mbp]
+        Server = https://dl.t2linux.org/archlinux/\$repo/\$arch' >> /etc/pacman.conf
+        tail /etc/pacman.conf
+        pacman -Syu linux-mbp linux-mbp-headers
         useradd builduser -m
         passwd -d builduser
         pacman -Syu --noconfirm --needed sudo base-devel
