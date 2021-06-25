@@ -12,6 +12,9 @@ jobs:
     - name: Build packages
       id: create_tag
       run: |
+        ls -l
+        git checkout packages
+        ls -l
         version=$(printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)")
         echo "::set-output name=tag::${version}"
         cat << EOF > entrypoint.sh
