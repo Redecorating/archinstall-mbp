@@ -17,6 +17,7 @@ jobs:
         cd /build
         echo '[mbp]
         Server = https://dl.t2linux.org/archlinux/\$repo/\$arch' >> /etc/pacman.conf
+        pacman-key --init
         curl -o key.asc https://dl.t2linux.org/archlinux/key.asc
         pacman-key --add key.asc
         pacman-key --lsign 7F9B8FC29F78B339
