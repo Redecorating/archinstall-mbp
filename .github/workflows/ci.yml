@@ -18,10 +18,9 @@ jobs:
         echo '[mbp]
         Server = https://dl.t2linux.org/archlinux/\$repo/\$arch' >> /etc/pacman.conf
         tail /etc/pacman.conf
-        pacman -Syu linux-mbp linux-mbp-headers
         useradd builduser -m
         passwd -d builduser
-        pacman -Syu --noconfirm --needed sudo base-devel
+        pacman -Syu --noconfirm --needed sudo base-devel linux-mbp linux-mbp-headers
         printf 'builduser ALL=(ALL) ALL\\n' | tee -a /etc/sudoers
         chown -R builduser:builduser /build
         cd /build/apple-t2-audio-config
