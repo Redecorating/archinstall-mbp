@@ -12,12 +12,7 @@ jobs:
     - name: Build packages
       id: create_tag
       run: |
-        ls -l
-        ls -R
-        git checkout packages
-        ls -l
-        version=$(printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)")
-        echo "::set-output name=tag::${version}"
+        echo foo
         cat << EOF > entrypoint.sh
         cd /build
         useradd builduser -m
@@ -25,15 +20,15 @@ jobs:
         pacman -Syu --noconfirm --needed sudo base-devel
         printf 'builduser ALL=(ALL) ALL\\n' | tee -a /etc/sudoers
         chown -R builduser:builduser /build
-        chown -R builduser:builduser /root
-        for i in apple-ibridge-dkms-git apple-t2-audio-config
-        do cd $i
+        cd /build/apple-t2-audio-config
         ls -l
         sudo -u builduser bash -c 'export MAKEFLAGS=j\$(nproc) && makepkg -s --noconfirm'
-        cd /build
-        done
+        cd /build/apple-ibridge-dkms-git
+        ls -l
+        sudo -u builduser bash -c 'export MAKEFLAGS=j\$(nproc) && makepkg -s --noconfirm'
         EOF
         docker run -t -v $PWD:/build archlinux /bin/bash /build/entrypoint.sh
+        ls -l . apple-ibridge-dkms-git apple-t2-audio-config
         zip packages.zip */*.pkg.tar.*
 
     - name: Upload Packages Artifact
