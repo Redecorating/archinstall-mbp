@@ -27,6 +27,7 @@ jobs:
         chown -R builduser:builduser /root
         for i in apple-ibridge-dkms-git apple-t2-audio-config
         do cd $i
+        ls -l
         sudo -u builduser bash -c 'export MAKEFLAGS=j\$(nproc) && makepkg -s --noconfirm'
         cd /build
         done
