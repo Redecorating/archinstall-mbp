@@ -13,7 +13,7 @@ jobs:
       id: build
       run: |
         echo foo
-        version=r$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
+        version=$(git rev-parse --short HEAD)
         echo $version
         echo "::set-output name=tag::${version}"
         cat << EOF > entrypoint.sh
