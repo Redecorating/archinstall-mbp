@@ -21,7 +21,7 @@ exit 0
 #	* audio configuration files
 #	* t2linux repo for updates to kernel
 #	* installs wifi firmware
-#	* installs kernel with M1 wifi patches for MBP16,X and MBA9,1 models
+#	* installs kernel with M1 wifi patches for MBP16,1/2 and MBA9,1 models
 #	* nvram read only because t2 likes to panic
 
 # https://wiki.t2linux.org/distributions/arch/installation/
@@ -83,11 +83,10 @@ def select_download_firmware(FW):
 	return firmwareFiles
 
 def checkWifiSupport(model):
-	# 16,3 is unknown
-	if "MacBookPro16," in model or "MacBookAir9,1" in model:
-		return "bigSur"
-	elif "MacBookPro15,4" in model:
+	if "MacBookPro16,3" in model or "MacBookPro15,4" in model:
 		return ""
+	elif "MacBookPro16," in model or "MacBookAir9,1" == model:
+		return "bigSur"
 	else:
 		return "mojave"
 
@@ -115,6 +114,7 @@ def _prep_function(*args, **kwargs):
 
 	if os.system("lspci |grep 'Apple Inc. T2' > /dev/null") == 0: 
 		model = open(f'/sys/devices/virtual/dmi/id/product_name', 'r').read()
+		model = model[:-1] #strip trailing \n
 	else:
 		print("This computer does not have a t2 chip.")
 		model = select(t2models,
@@ -198,6 +198,8 @@ def _prep_function(*args, **kwargs):
 if __name__ == 'apple-t2':
 
 	apple_t2 = archinstall.storage["apple_t2"]
+
+	installation = archinstall.storage['installation_session']
 
 	## t2linux repo ##
 
@@ -312,11 +314,10 @@ if __name__ == 'apple-t2':
 			nobody('gpg --recv-key 38DBBDC86092693E')
 			nobody('cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o')
 			"""
-			# use the binary from here for now https://github.com/Redecorating/mbp-16.1-linux-wifi/actions/runs/884896036
+			# use the binary from here for now https://github.com/Redecorating/mbp-16.1-linux-wifi/releases
 			# these were compiled by github ci, so that and the ci.yml is the root of trust if you install them (i think)
 			print('Installing kernel with alternate WiFi patches.')
-			installation.arch_chroot("curl -o /usr/local/src/t2linux/mbp-16.1-linux-wifi-arch.zip https://github.com/Redecorating/mbp-16.1-linux-wifi/suites/2854066967/artifacts/63752636")
-			installation.arch_chroot("unzip /usr/local/src/t2linux/mbp-16.1-linux-wifi-arch.zip")
+			installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux;LINK=$(curl -s https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/latest | cut -d\" -f2);REL=$(echo $LINK|cut -dv -f2); wget $LINK/mbp-16.1-linux-wifi-${REL}-x86_64.pkg.tar.zst $LINK/mbp-16.1-linux-wifi-headers-${REL}-x86_64.pkg.tar.zst'") #pain
 			installation.arch_chroot("pacman -U --noconfirm /usr/local/src/t2linux/mbp-16.1-linux-wifi-*.pkg.tar.zst")
 			installation.arch_chroot("sed -i -e s/linux-mbp.conf/mbp-16.1-linux-wifi.conf/g /boot/loader/loader.conf")
 		except:
