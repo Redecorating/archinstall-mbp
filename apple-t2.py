@@ -318,7 +318,7 @@ if __name__ == 'apple-t2':
 			# these were compiled by github ci, so that and the ci.yml is the root of trust if you install them (i think)
 			print('Installing kernel with alternate WiFi patches.')
 			#installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux;LINK=$(curl -s https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/latest | cut -d\" -f2);REL=$(echo $LINK|cut -dv -f2); wget $LINK/mbp-16.1-linux-wifi-${REL}-x86_64.pkg.tar.zst $LINK/mbp-16.1-linux-wifi-headers-${REL}-x86_64.pkg.tar.zst'") #pain
-			installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux ; wget https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/download/v5.12.13-1/mbp-16.1-linux-wifi-5.12.13-1-x86_64.pkg.tar.zst https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/download/v5.12.13-1/mbp-16.1-linux-wifi-headers-5.12.13-1-x86_64.pkg.tar.zst'")
+			installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux ; curl -O https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/download/v5.12.13-1/mbp-16.1-linux-wifi-5.12.13-1-x86_64.pkg.tar.zst https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/download/v5.12.13-1/mbp-16.1-linux-wifi-headers-5.12.13-1-x86_64.pkg.tar.zst'")
 			installation.arch_chroot("pacman -U --noconfirm /usr/local/src/t2linux/mbp-16.1-linux-wifi-*.pkg.tar.zst")
 			installation.arch_chroot("sed -i -e s/linux-mbp.conf/mbp-16.1-linux-wifi.conf/g /boot/loader/loader.conf")
 		except:
