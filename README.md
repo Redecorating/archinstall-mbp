@@ -3,6 +3,9 @@
 A profile for [python-archinstall](https://github.com/archlinux/archinstall), that installs drivers and packages for t2 Macs.
 
 ## Usage
+
+**I need to update this to work with archinstall 2.2, for now use archinstall 2.1.4:**
+
 1. If you are not on a MacBookPro15,4 (13-inch, 2019, Two Thunderbolt 3 ports), in MacOS, run `ioreg -l | grep RequestedFiles`. Make sure you can refer to the output of this command while your Mac is booted into the Arch Install iso.
 2. Use a T2 Mac specific ISO from [here](https://dl.t2linux.org/archlinux/iso/index.html).
 3. Boot the install iso, and connect to internet.
@@ -10,6 +13,7 @@ A profile for [python-archinstall](https://github.com/archlinux/archinstall), th
 ```shell
 wget https://bit.ly/3amlr9v -O apple-t2.py
 sh apple-t2.py
+pacman -U https://archive.archlinux.org/packages/a/archinstall/archinstall-2.1.4-3-any.pkg.tar.zst
 python -m archinstall
 ```
 5. Enable bluetooth with `systemctl enable bluetooth` if you want it.
