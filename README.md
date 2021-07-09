@@ -2,8 +2,6 @@
 
 A profile for [python-archinstall](https://github.com/archlinux/archinstall), that installs drivers and packages for T2 Macs.
 
-This branch is bleeding edge, I may or may not have tested it.
-
 ## Usage
 1. If you are not on a MacBookPro15,4 (13-inch, 2019, Two Thunderbolt 3 ports), 
    in MacOS, run `ioreg -l | grep RequestedFiles`. Make sure you can refer to the
@@ -12,11 +10,17 @@ This branch is bleeding edge, I may or may not have tested it.
 4. Boot the install ISO, and connect to internet.
 5. Run this:
 ```shell
-wget https://raw.githubusercontent.com/Redecorating/archinstall-mbp/testing/apple-t2.py
+wget https://bit.ly/3amlr9v -O apple-t2.py
 sh apple-t2.py
 python -m archinstall
 ```
 5. Enable Bluetooth with `systemctl enable bluetooth` if you want it.
+6. If you are on a MacBookPro16,1/2/4 or MacBookAir9,1, do this as the
+   automation of it is broken.
+   
+   ```
+   pacman -U /usr/local/src/t2linux/mbp-16.1-linux-wifi-*.pkg.tar.zst
+   ```
 
 At the profiles section, you **need** to select the "apple-t2" profile. The
 apple-t2 profile will ask you if you want a second profile.
@@ -39,14 +43,15 @@ t2linux repo for updates to kernel
 
 Installs WiFi firmware, walks you through selection
 
-On MacBookPro16,X and MacBookAir9,1 models, installs a kernel with an alternate
+On MacBookPro16,1/2/4 and MacBookAir9,1 models, installs a kernel with an alternate
 WiFi patch that was made for M1 Macs that works on those models.
 
 NVRAM remount as read only because T2 likes to panic
 
 Unload Touchbar driver before suspend to fix resume
 
-Makes linux-mbp kernel the default kernel to boot with
+Makes linux-mbp kernel the default kernel to boot with, or the alternate wifi kernel
+if it was installed.
 
 Installs `iwd` and sets it as NetworkManager's WiFi backend, if needed
 installs iwd 1.13.
