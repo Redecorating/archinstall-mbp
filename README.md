@@ -2,6 +2,8 @@
 
 A profile for [python-archinstall](https://github.com/archlinux/archinstall), that installs drivers and packages for T2 Macs.
 
+Currently you must choose systemd-boot as your bootloader, grub will not work. See [#3](https://github.com/Redecorating/archinstall-mbp/issues/3)
+
 ## Usage
 1. If you are not on a MacBookPro15,4 or MacBookPro16,3 (13-inch, Two Thunderbolt 3 ports), 
    in MacOS, run `ioreg -l | grep RequestedFiles`. Make sure you can refer to the
