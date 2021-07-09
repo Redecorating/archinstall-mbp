@@ -59,7 +59,6 @@ Installs `iwd` and sets it as NetworkManager's WiFi backend, if needed
 installs iwd 1.13.
 
 TODO:
-<<<<<<< HEAD
 - install mbpfan
 - configure apple-ib-tb and apple-bce options
 - hybrid graphics?
