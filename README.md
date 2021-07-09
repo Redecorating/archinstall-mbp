@@ -3,7 +3,8 @@
 A profile for [python-archinstall](https://github.com/archlinux/archinstall), that installs drivers and packages for T2 Macs.
 
 ## Usage
-1. If you are not on a MacBookPro15,4 (13-inch, 2019, Two Thunderbolt 3 ports), 
+<<<<<<< HEAD
+1. If you are not on a MacBookPro15,4 or MacBookPro16,3 (13-inch, Two Thunderbolt 3 ports), 
    in MacOS, run `ioreg -l | grep RequestedFiles`. Make sure you can refer to the
    output of this command while your Mac is booted into the Arch Install ISO.
 3. Use a T2 Mac specific ISO from [here](https://dl.t2linux.org/archlinux/iso/index.html).
@@ -57,6 +58,7 @@ Installs `iwd` and sets it as NetworkManager's WiFi backend, if needed
 installs iwd 1.13.
 
 TODO:
+<<<<<<< HEAD
 - install mbpfan
 - configure apple-ib-tb and apple-bce options
 - hybrid graphics?
