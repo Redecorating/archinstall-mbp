@@ -45,7 +45,7 @@ jobs:
         echo "::set-output name=tag::r${count}.${hash}"
         
     - name: Print sha512sums
-      run: sha512sum *.pkg.tar.*
+      run: sha512sum */*.pkg.tar.*
 
     - name: Upload Packages Artifact
       uses: actions/upload-artifact@v2
