@@ -9,13 +9,10 @@ jobs:
     steps:
     - name: checkout repo
       uses: actions/checkout@v2
+      with:
+        fetch-depth: '0'
     - name: Build packages
-      id: build
       run: |
-        echo foo
-        version=$(git rev-parse --short HEAD)
-        echo $version
-        echo "::set-output name=tag::${version}"
         cat << EOF > entrypoint.sh
         cd /build
         echo '[mbp]
@@ -39,11 +36,21 @@ jobs:
         docker run -t -v $PWD:/build archlinux /bin/bash /build/entrypoint.sh
         ls -l . apple-ibridge-dkms-git apple-t2-audio-config
         sudo zip packages.zip */*.pkg.tar.*
+        
+    - name: generate tag
+      id: tag
+      run: |
+        count=$(git rev-list --count HEAD)
+        hash=$(git rev-parse --short HEAD)
+        echo "::set-output name=tag::r${count}.${hash}"
+        
+    - name: Print sha512sums
+      run: sha512sum *.pkg.tar.*
 
     - name: Upload Packages Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: mbp-packages-${{ steps.build.outputs.tag }}
+        name: mbp-packages-${{ steps.tag.outputs.tag }}
         path: ${{ github.workspace }}/packages.zip
 
     - name: Release
@@ -51,7 +58,7 @@ jobs:
       with:
         files: |
               ${{ github.workspace }}/*/*.pkg.tar.*
-        tag_name: ${{ steps.build.outputs.tag }}
+        tag_name: ${{ steps.tag.outputs.tag }}
         draft: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
