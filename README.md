@@ -17,7 +17,7 @@ sh apple-t2.py
 python -m archinstall
 ```
 5. Enable Bluetooth with `systemctl enable bluetooth` if you want it.
-6. If you are on a MacBookPro16,1/2/4 or MacBookAir9,1, do this as the
+6. If you are on a MacBookPro16,1/2/4, do this as the
    automation of it is broken.
    
    ```
