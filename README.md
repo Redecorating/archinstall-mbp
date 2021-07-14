@@ -45,7 +45,7 @@ t2linux repo for updates to kernel
 
 Installs WiFi firmware, walks you through selection
 
-On MacBookPro16,1/2/4 and MacBookAir9,1 models, installs a kernel with an alternate
+On MacBookPro16,1/2/4 models, installs a kernel with an alternate
 WiFi patch that was made for M1 Macs that works on those models.
 
 NVRAM remount as read only because T2 likes to panic
