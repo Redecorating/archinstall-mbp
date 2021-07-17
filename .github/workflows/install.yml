@@ -14,7 +14,8 @@ jobs:
           echo getting ${VERSION}
           wget http://mirrors.evowise.com/archlinux/iso/latest/${VERSION}
           wget http://mirrors.evowise.com/archlinux/iso/latest/${VERSION}.sig
-          # TODO need to get keys
+          curl https://git.archlinux.org/archlinux-keyring.git/plain/packager/pierre.asc > archpub.key
+          gpg --import archpub.key
           gpg --verify archlinux-bootstrap-*-x86_64.tar.gz.sig
           
           tar xzf archlinux-bootstrap-*-x86_64.tar.gz
