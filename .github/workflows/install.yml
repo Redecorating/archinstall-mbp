@@ -29,4 +29,5 @@ jobs:
           echo FIXME
           
       - name: Install
+        run: |
           root.x86_64/bin/arch-chroot root.x86_64/ pacman -Q
