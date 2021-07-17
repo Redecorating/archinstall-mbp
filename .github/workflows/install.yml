@@ -1,0 +1,32 @@
+name: Test Install
+on:
+  [push]
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: bootstrap
+        run: |
+          VERSION=$(curl -s http://mirrors.evowise.com/archlinux/iso/latest/ | grep 'archlinux-bootstrap-.*-x86_64.tar.gz<'|cut -d\" -f2)
+          echo getting ${VERSION}
+          wget http://mirrors.evowise.com/archlinux/iso/latest/${VERSION}
+          wget http://mirrors.evowise.com/archlinux/iso/latest/${VERSION}.sig
+          # TODO need to get keys
+          gpg --verify archlinux-bootstrap-*-x86_64.tar.gz.sig
+          
+          tar xzf archlinux-bootstrap-*-x86_64.tar.gz
+          cat root.x86_64/etc/pacman.d/mirrorlist
+          
+      - name: Copy our files
+        run: |
+          cp -v apple-t2.py root.x86_64/lib/python3.9/site-packages/archinstall/profiles/apple-t2.py
+          
+      - name: Make disk image
+        run: |
+          echo FIXME
+          
+      - name: Install
+          root.x86_64/bin/arch-chroot root.x86_64/ pacman -Q
