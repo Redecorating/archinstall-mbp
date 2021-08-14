@@ -20,9 +20,6 @@ Currently you must choose systemd-boot as your bootloader, grub will not work. S
    ```
 5. Enable Bluetooth with `systemctl enable bluetooth` if you want it.
 
-At the profiles section, you **need** to select the "apple-t2" profile. The
-apple-t2 profile will ask you if you want a second profile.
-
 ## What does it install?
 
 Installs Archinstall to the live session if it's missing (as the latest
