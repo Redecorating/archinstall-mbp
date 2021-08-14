@@ -82,9 +82,7 @@ def select_download_firmware(FW):
 	return firmwareFiles
 
 def checkWifiSupport(model):
-	if "MacBookPro16,3" in model or "MacBookPro15,4" in model:
-		return ""
-	elif "MacBookPro16," in model or "MacBookAir9,1" == model:
+	if "MacBookPro15,4" == model or "MacBookPro16," in model or "MacBookAir9,1" == model:
 		return "bigSur"
 	else:
 		return "mojave"
@@ -222,14 +220,11 @@ if __name__ == 'apple-t2':
 
 	print("Adding linux-mbp to systemd-boot menu as default")
 
-	kernels = ["linux-mbp"]
-	if apple_t2["wifi"] == 	"bigSur":
-		kernels.append("mbp-16.1-linux-wifi")
+	kernel = "linux-mbp"
 
-	for kernel in kernels:
-		folder = "/boot/loader/entries"
-		installation.arch_chroot(f"sh -c 'cp {folder}/????-??-??_??-??-??.conf {folder}/{kernel}.conf'")
-		installation.arch_chroot(f"sed -i -e s/-linux/-{kernel}/g -e s/options/options\ pcie_ports=compat\ intel_iommu=on/g {folder}/{kernel}.conf")
+	folder = "/boot/loader/entries"
+	installation.arch_chroot(f"sh -c 'cp {folder}/????-??-??_??-??-??.conf {folder}/{kernel}.conf'")
+	installation.arch_chroot(f"sed -i -e s/-linux/-{kernel}/g -e s/options/options\ pcie_ports=compat\ intel_iommu=on/g {folder}/{kernel}.conf")
 
 	with open(f"/mnt/boot/loader/loader.conf", 'a') as loaderConf:
 		loaderConf.write("\ndefault linux-mbp.conf\ntimeout 1\n")
@@ -298,27 +293,13 @@ if __name__ == 'apple-t2':
 
 	if apple_t2["wifi"] == "bigSur":
 		try:
-			"""
-			print("Cloning patches from https://github.com/jamlam/mbp-16.1-linux-wifi")
-			nobody('git clone https://github.com/jamlam/mbp-16.1-linux-wifi /usr/local/src/t2linux/mbp-16.1-linux-wifi')
-			print("Installing kernel build dependencies")
-			installation.arch_chroot("pacman -S --needed --noconfirm bc kmod libelf pahole cpio perl tar xz xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick git")
-			print("Downloading kernel source")
-			nobody('gpg --recv-key 38DBBDC86092693E')
-			nobody('cd /usr/local/src/t2linux/mbp-16.1-linux-wifi && makepkg -o')
-			"""
-			# use the binary from here for now https://github.com/Redecorating/mbp-16.1-linux-wifi/releases
-			# these were compiled by github ci, so that and the ci.yml is the root of trust if you install them (i think)
-			print('Installing kernel with alternate WiFi patches.')
-			#installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux;LINK=$(curl -s https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/latest | cut -d\" -f2);REL=$(echo $LINK|cut -dv -f2); wget $LINK/mbp-16.1-linux-wifi-${REL}-x86_64.pkg.tar.zst $LINK/mbp-16.1-linux-wifi-headers-${REL}-x86_64.pkg.tar.zst'") #pain
-			installation.arch_chroot("sh -c 'cd /usr/local/src/t2linux ; curl -LO https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/download/v5.12.13-1/mbp-16.1-linux-wifi-5.12.13-1-x86_64.pkg.tar.zst -O https://github.com/Redecorating/mbp-16.1-linux-wifi/releases/download/v5.12.13-1/mbp-16.1-linux-wifi-headers-5.12.13-1-x86_64.pkg.tar.zst'")
-			installation.arch_chroot("pacman -U --noconfirm /usr/local/src/t2linux/mbp-16.1-linux-wifi-*.pkg.tar.zst")
-			installation.arch_chroot("sed -i -e s/linux-mbp.conf/mbp-16.1-linux-wifi.conf/g /boot/loader/loader.conf")
+			link = "https://gist.github.com/hexchain/22932a13a892e240d71cb98fad62a6a0/archive/50ce4513d2865b1081a972bc09e8da639f94a755.zip"
+			nobody(f"wget {link} -O /usr/local/src/t2linux/corellium-wifi.zip")
+			nobody("cd /usr/local/src/t2linux && unzip corellium-wifi.zip")
+			nobody('cd /usr/local/src/t2linux/22932a13a892e240d71cb98fad62a6a0-50ce4513d2865b1081a972bc09e8da639f94a755 && makepkg')
+			installation.arch_chroot("pacman -U --noconfirm /usr/local/src/t2linux/22932a13a892e240d71cb98fad62a6a0-50ce4513d2865b1081a972bc09e8da639f94a755/*.pkg.tar.zst")
 		except:
-			print("An error occured while installing the kernel with M1 wifi patches.")
-	else:
-		print('Installing iwd version 1.13-1, as 1.14 doesn\'t work for t2 macbooks.')
-		installation.arch_chroot("pacman -U --noconfirm https://archive.archlinux.org/packages/i/iwd/iwd-1.13-1-x86_64.pkg.tar.zst")
+			print("An error occured while installing the patched version of brcmfmac.")
 
 	# nvram ro
 	try:

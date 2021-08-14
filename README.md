@@ -45,18 +45,16 @@ t2linux repo for updates to kernel
 
 Installs WiFi firmware, walks you through selection
 
-On MacBookPro16,1/2/4 models, installs a kernel with an alternate
-WiFi patch that was made for M1 Macs that works on those models.
+On MacBookPro15,4/16,X and MacBookAir9,1 models, installs a different version
+of the `brcmfmac` driver that was made for M1 Macs and works on those models.
 
 NVRAM remount as read only because T2 likes to panic
 
 Unload Touchbar driver before suspend to fix resume
 
-Makes linux-mbp kernel the default kernel to boot with, or the alternate wifi kernel
-if it was installed.
+Makes linux-mbp kernel the default kernel to boot with.
 
-Installs `iwd` and sets it as NetworkManager's WiFi backend, if needed
-installs iwd 1.13.
+Installs `iwd` and sets it as NetworkManager's WiFi backend.
 
 TODO:
 - install mbpfan
