@@ -171,12 +171,7 @@ def _prep_function(*args, **kwargs):
 	except:
 		print("Couldn't select second profile, probably because this is being run as a test")
 
-	## repeat user's selections ##
-
-	print("Your selected options for the apple-t2 profile:", end="\n\t")
-	print(apple_t2)
-
-	archinstall.storage["apple_t2"] = apple_t2
+	archinstall.arguments["apple_t2"] = apple_t2
 
 	return True
 
@@ -196,7 +191,7 @@ def _prep_function(*args, **kwargs):
 
 if __name__ == 'apple-t2':
 
-	apple_t2 = archinstall.storage["apple_t2"]
+	apple_t2 = archinstall.arguments["apple_t2"]
 
 	installation = archinstall.storage['installation_session']
 
@@ -227,7 +222,6 @@ if __name__ == 'apple-t2':
 
 	print("Adding linux-mbp to systemd-boot menu as default")
 
-	apple_t2 = archinstall.storage["apple_t2"]
 	kernels = ["linux-mbp"]
 	if apple_t2["wifi"] == 	"bigSur":
 		kernels.append("mbp-16.1-linux-wifi")

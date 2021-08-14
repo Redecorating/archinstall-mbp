@@ -1,0 +1,42 @@
+{
+    "audio": "pipewire",
+	"apple_t2": {
+        "altAudioConf": true,
+        "chainProfile": "minimal",
+        "model": "MacBookPro16,1",
+        "touchbar": true,
+        "wifi": "bigSur",
+        "wifiFW": {
+            "FIRMWARE": "C-4364__s-B3/bali.trx",
+            "NVRAM": "C-4364__s-B3/P-bali_M-HRPN_V-u__m-7.7.txt",
+            "REGULATORY": "C-4364__s-B3/bali.clmb",
+            "release": "bigSurFW"
+        }
+    },
+    "bootloader": "systemd-bootctl",
+    "!encryption-password": "supersecret",
+    "filesystem": "ext4",
+    "gfx_driver": "All open-source (default)",
+    "harddrive": {"path": "/dev/loop100"},
+    "hostname": "development-box",
+    "kernels": [],
+    "keyboard-language": "us",
+    "mirror-region": "Worldwide",
+    "nic": {
+        "NetworkManager": true
+    },
+    "ntp": true,
+    "packages": ["git", "wget", "zsh"],
+    "profile": "apple-t2",
+    "services": [],
+    "superusers": {
+        "devel": {
+            "!password": "devel"
+        }
+    },
+    "sys-encoding": "utf-8",
+    "sys-language": "en_US",
+    "timezone": "US/Eastern",
+    "users": {}
+}
+
