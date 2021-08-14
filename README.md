@@ -5,24 +5,20 @@ A profile for [python-archinstall](https://github.com/archlinux/archinstall), th
 Currently you must choose systemd-boot as your bootloader, grub will not work. See [#3](https://github.com/Redecorating/archinstall-mbp/issues/3)
 
 ## Usage
-1. If you are not on a MacBookPro15,4 or MacBookPro16,3 (13-inch, Two Thunderbolt 3 ports), 
-   in MacOS, run `ioreg -l | grep RequestedFiles`. Make sure you can refer to the
+1. In MacOS, run `ioreg -l | grep RequestedFiles`. Make sure you can refer to the
    output of this command while your Mac is booted into the Arch Install ISO.
-3. Use a T2 Mac specific ISO from [here](https://dl.t2linux.org/archlinux/iso/index.html).
-4. Boot the install ISO, and connect to internet.
-5. Run this:
-```shell
-wget https://bit.ly/3amlr9v -O apple-t2.py
-sh apple-t2.py
-python -m archinstall
-```
+2. Use a T2 Mac specific ISO from [here](https://dl.t2linux.org/archlinux/iso/index.html).
+3. Boot the install ISO, and connect to internet.
+4. Run the code block below, but first, there are a few options in archinstall that you must select or it won't work:
+   1. When prompted by archinstall, do NOT use grub as the bootloader, it isn't yet working with this script.
+   2. When prompted by archinstall, select "apple-t2" as your profile. You will be able to select a second profile later.
+
+   ```shell
+   wget https://bit.ly/3amlr9v -O apple-t2.py
+   sh apple-t2.py
+   python -m archinstall
+   ```
 5. Enable Bluetooth with `systemctl enable bluetooth` if you want it.
-6. If you are on a MacBookPro16,1/2/4, do this as the
-   automation of it is broken.
-   
-   ```
-   pacman -U /usr/local/src/t2linux/mbp-16.1-linux-wifi-*.pkg.tar.zst
-   ```
 
 At the profiles section, you **need** to select the "apple-t2" profile. The
 apple-t2 profile will ask you if you want a second profile.
@@ -63,4 +59,3 @@ TODO:
 - only show top level profiles as chainload options
 - make into a plugin when they are implemented into archinstall.
 - get github ci to test it
-- get github ci to make the packages
