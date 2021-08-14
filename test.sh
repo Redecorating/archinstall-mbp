@@ -5,7 +5,7 @@ name=ArchMBP-0.1
 
 #mkdir mnt
 
-dd if=/dev/zero of=${name}.iso bs=256M count=16
+dd if=/dev/zero of=${name}.iso bs=1G count=8
 
 #parted -s ${name}.iso \
 #mklabel gpt \
@@ -20,4 +20,6 @@ sudo losetup -P loop100 ${name}.iso
 #sudo mkdir /mnt/boot
 #sudo mount /dev/loop100p1 /mnt/boot
 
+archinstall  --config ./testing.json --silent
 
+#  umount /mnt -R; please cryptsetup close luksloop; please losetup -D; rm ArchMBP-0.1.iso

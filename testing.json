@@ -13,6 +13,9 @@
             "release": "bigSurFW"
         }
     },
+	 "custom-commands": [
+                  "pacman -Qm",
+                  "dkms status"],
     "bootloader": "systemd-bootctl",
     "!encryption-password": "supersecret",
     "filesystem": "ext4",

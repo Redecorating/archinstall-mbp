@@ -214,7 +214,7 @@ if __name__ == 'apple-t2':
 	# add modules to mkinitpcio before the mbp initramfs' are generated
 	installation.arch_chroot("sed -i s/^MODULES=\(/MODULES=\(apple_bce\ hid_apple\ usbhid\ /gm /etc/mkinitcpio.conf")
 
-	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git iwd")
+	installation.arch_chroot("pacman -Syu --noconfirm linux-mbp git linux-mbp-headers apple-bce-dkms-git iwd unzip")
 
 	## add kernel to systemd-boot as default ##
 
@@ -235,34 +235,25 @@ if __name__ == 'apple-t2':
 		# gpg and git need a home directory
 		installation.arch_chroot(f"sh -c \"HOME=/usr/local/src/t2linux runuser nobody -m -s /bin/sh -c \\\"{command}\\\"\"")
 
-	try:
-		installation.arch_chroot("mkdir /usr/local/src/t2linux")
-		installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
-		nobody('git clone https://github.com/Redecorating/archinstall-mbp -b packages /usr/local/src/t2linux')
-	except:
-		print("Failed to clone Redecorating/archinstall-mbp, the next few steps will most likely also fail.")
+	installation.arch_chroot("mkdir /usr/local/src/t2linux")
+	installation.arch_chroot("chown nobody:nobody /usr/local/src/t2linux") # makepkg doesn't run as root
+	nobody('git clone https://github.com/Redecorating/archinstall-mbp -b packages /usr/local/src/t2linux')
 
 	## apple-ibridge (touchbar)
 	if apple_t2["touchbar"] == True:
-		try:
-			print("Building apple-ibridge-dkms-git")
-			nobody('cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg')
-			print("Installing apple-ibridge-dkms-git")
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-ibridge-dkms-git/apple-ibridge-dkms-git-*-x86_64.pkg*'")
-		except:
-			print("An error occured when installing the touchbar driver.")
+		print("Building apple-ibridge-dkms-git")
+		nobody('cd /usr/local/src/t2linux/apple-ibridge-dkms-git && makepkg')
+		print("Installing apple-ibridge-dkms-git")
+		installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-ibridge-dkms-git/apple-ibridge-dkms-git-*-x86_64.pkg*'")
 
 	## audio conf ##
-	try:
-		nobody('cd /usr/local/src/t2linux/apple-t2-audio-config && makepkg')
-		if apple_t2["altAudioConf"] == True:
-			print("Installing alternate t2 alsa card profile files for 16 inch MacBookPro")
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm  /usr/local/src/t2linux/apple-t2-audio-config/apple-t2-audio-config-alt-*-any.pkg*'")
-		else:
-			print("Installing t2 alsa card profile files")
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-audio-config/apple-t2-audio-config-?.?-?-any.pkg*'")
-	except:
-		print("An error occured when installing the alsa card profiles for t2 audio")
+	nobody('cd /usr/local/src/t2linux/apple-t2-audio-config && makepkg')
+	if apple_t2["altAudioConf"] == True:
+		print("Installing alternate t2 alsa card profile files for 16 inch MacBookPro")
+		installation.arch_chroot("sh -c 'pacman -U --noconfirm  /usr/local/src/t2linux/apple-t2-audio-config/apple-t2-audio-config-alt-*-any.pkg*'")
+	else:
+		print("Installing t2 alsa card profile files")
+		installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-audio-config/apple-t2-audio-config-?.?-?-any.pkg*'")
 
 	## wifi ##
 
@@ -270,44 +261,36 @@ if __name__ == 'apple-t2':
 	installation.arch_chroot(r"echo [device]\nwifi.backend=iwd >> /etc/NetworkManager/NetworkManager.conf")
 	installation.enable_service('iwd')
 
-	if bool(apple_t2["wifi"]):
-		try:
-			print("Configuring WiFi PKGBUILD to use the selected firmware")
+	print("Configuring WiFi PKGBUILD to use the selected firmware")
 
-			model = apple_t2["model"]
-			release = apple_t2["wifiFW"]["release"]
+	model = apple_t2["model"]
+	release = apple_t2["wifiFW"]["release"]
 
-			for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
-				link = apple_t2["wifiFW"][key]
-				folder = '/usr/local/src/t2linux/apple-t2-wifi-firmware'
-				nobody(f"ln -sr {folder}/{release}/{link} {folder}/{key}")
-			installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' {folder}/PKGBUILD")
+	for key in ["FIRMWARE", "REGULATORY", "NVRAM"]:
+		link = apple_t2["wifiFW"][key]
+		folder = '/usr/local/src/t2linux/apple-t2-wifi-firmware'
+		nobody(f"ln -sr {folder}/{release}/{link} {folder}/{key}")
+	installation.arch_chroot(f"sed -i 's#MODEL#{model}#g' {folder}/PKGBUILD")
 
-			print("Making package")
-			nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg')
+	print("Making package")
+	nobody('cd /usr/local/src/t2linux/apple-t2-wifi-firmware && makepkg')
 
-			print("Installing WiFi firmware package")
-			installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/*.pkg.tar.zst'")
-		except:
-			print("An error occured when installing WiFi firmware.")
+	print("Installing WiFi firmware package")
+	installation.arch_chroot("sh -c 'pacman -U --noconfirm /usr/local/src/t2linux/apple-t2-wifi-firmware/*.pkg.tar.zst'")
 
 	if apple_t2["wifi"] == "bigSur":
-		try:
-			link = "https://gist.github.com/hexchain/22932a13a892e240d71cb98fad62a6a0/archive/50ce4513d2865b1081a972bc09e8da639f94a755.zip"
-			nobody(f"wget {link} -O /usr/local/src/t2linux/corellium-wifi.zip")
-			nobody("cd /usr/local/src/t2linux && unzip corellium-wifi.zip")
-			nobody('cd /usr/local/src/t2linux/22932a13a892e240d71cb98fad62a6a0-50ce4513d2865b1081a972bc09e8da639f94a755 && makepkg')
-			installation.arch_chroot("pacman -U --noconfirm /usr/local/src/t2linux/22932a13a892e240d71cb98fad62a6a0-50ce4513d2865b1081a972bc09e8da639f94a755/*.pkg.tar.zst")
-		except:
-			print("An error occured while installing the patched version of brcmfmac.")
+		link = "https://gist.github.com/hexchain/22932a13a892e240d71cb98fad62a6a0/archive/50ce4513d2865b1081a972bc09e8da639f94a755.zip"
+		nobody(f"wget {link} -O /usr/local/src/t2linux/corellium-wifi.zip")
+		nobody("cd /usr/local/src/t2linux && unzip corellium-wifi.zip")
+		nobody("mv /usr/local/src/t2linux/22932a13a892e240d71cb98fad62a6a0-50ce4513d2865b1081a972bc09e8da639f94a755 /usr/local/src/t2linux/corellium-wifi")
+		nobody('cd /usr/local/src/t2linux/corellium-wifi && makepkg')
+
+		installation.arch_chroot("pacman -U --noconfirm /usr/local/src/t2linux/corellium-wifi/brcm80211-mbp16x-dkms-5.13.9-2-x86_64.pkg.tar.zst")
 
 	# nvram ro
-	try:
-		print('Setting nvram to remount at boot as readonly, as writing to it panics the t2 chip')
-		with open(f"/mnt/etc/fstab", 'a') as fstab:
-			fstab.write("\nefivarfs /sys/firmware/efi/efivars efivarfs ro,remount 0 0\n")
-	except:
-		print("Failed to set nvram to remount.")
+	print('Setting nvram to remount at boot as readonly, as writing to it panics the t2 chip')
+	with open(f"/mnt/etc/fstab", 'a') as fstab:
+		fstab.write("\nefivarfs /sys/firmware/efi/efivars efivarfs ro,remount 0 0\n")
 
 	## chainloaded profile ##
 
@@ -348,7 +331,7 @@ mojaveFW = {
 "C-4355__s-C1": ["hawaii"],
 
 "C-4364__s-B2": ["ekans", "kahana", "kauai", "lanai",
-					  "maui", "midway", "nihau", "sid"],
+				  "maui", "midway", "nihau", "sid"],
 
 "C-4364__s-B3": ["Kahana", "Sid"],
 
@@ -411,7 +394,7 @@ mojaveFW = {
 			"P-sid-ID_M-HRPN_V-u__m-7.7.txt"],
 
 "formosa": ["P-formosa-ID_M-SPPR_V-m__m-2.0.txt",
-			"P-formosa-ID_M-SPPR_V-u__m-2.0.txt"],
+			"P-formosa-ID_M-SPPR_V-u__m-2.0.txt"]
 }
 
 # bigSur
@@ -422,8 +405,8 @@ bigSurFW = {
 
 ## Chips and islands ##
 
-"chips": [	"C-4355__s-C1", "C-4364__s-B2", "C-4364__s-B3",
-			"C-4377__s-B3", "C-4378__s-B1"],
+"chips": [	"C-4355__s-C1", "C-4364__s-B2",
+			"C-4364__s-B3", "C-4377__s-B3"],
 
 "C-4355__s-C1": ["hawaii"],
 
@@ -434,8 +417,6 @@ bigSurFW = {
 				 "Kure", "Sid", "Trinidad"],
 
 "C-4377__s-B3": ["fiji", "formosa", "tahiti"],
-
-"C-4378__s-B1": ["atlantisb", "atlantis", "honshu", "shikoku"],
 
 ## Nvram ##
 
@@ -520,21 +501,7 @@ bigSurFW = {
 			"P-fiji-ID_M-SPPR_V-u__m-2.0.txt"],
 
 "tahiti": [	"P-fiji-ID_M-SPPR_V-m__m-2.0.txt",
-			"P-fiji-ID_M-SPPR_V-u__m-2.0.txt"],
-
-# 4378 B1
-
-"atlantis": [	"P-atlantis-ID_M-RASP_V-m__m-6.1.txt",
-				"P-atlantis-ID_M-RASP_V-u__m-3.7.txt"],
-
-"atlantisb": [	"P-atlantis-ID_M-RASP_V-m__m-6.1.txt",
-				"P-atlantis-ID_M-RASP_V-u__m-3.7.txt"],
-
-"honshu": [		"P-honshu-ID_M-RASP_V-m__m-6.1.txt",
-				"P-honshu-ID_M-RASP_V-u__m-3.7.txt"],
-
-"shikoku": [	"P-shikoku-ID_M-RASP_V-m__m-6.1.txt",
-				"P-shikoku-ID_M-RASP_V-u__m-3.7.txt"]
+			"P-fiji-ID_M-SPPR_V-u__m-2.0.txt"]
 
 }
 
