@@ -10,7 +10,7 @@ Currently you must choose systemd-boot as your bootloader, grub will not work. S
 2. Use a T2 Mac specific ISO from [here](https://dl.t2linux.org/archlinux/iso/index.html).
 3. Boot the install ISO, and connect to internet.
 4. Run the code block below, but first, there are a few options in archinstall that you must select or it won't work:
-   1. When prompted by archinstall, do NOT use grub as the bootloader, it isn't yet working with this script.
+   1. When prompted by archinstall, do NOT use grub as the bootloader, it isn't yet working with this script. Also make sure that the EFI system partition is mounted on /boot, not /boot/efi, as systemd-boot needs it on /boot.
    2. When prompted by archinstall, select "apple-t2" as your profile. You will be able to select a second profile later.
 
    ```shell
