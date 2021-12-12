@@ -14,7 +14,8 @@ Currently you must choose systemd-boot as your bootloader, grub will not work. S
    2. When prompted by archinstall, select "apple-t2" as your profile. You will be able to select a second profile later.
 
    ```shell
-   wget https://bit.ly/3amlr9v -O apple-t2.py
+   wget https://raw.githubusercontent.com/Redecorating/archinstall-mbp/main/apple-t2.py
+   # or use wget https://bit.ly/3amlr9v -O apple-t2.py
    sh apple-t2.py
    python -m archinstall
    ```
